@@ -1,0 +1,120 @@
+{% include "base.html" %}
+{% include 'navigation.html' %}
+<style>
+    body{
+        background-color:lightblue;
+    }
+
+</style>
+
+
+{% load static %}
+
+
+
+{% block content %}
+
+<!-- FULL-WIDTH SLIDER (auto-play) -->
+<div id="mainSlider" class="carousel slide" data-ride="carousel" data-interval="5000">
+  <div class="carousel-inner">
+
+    <div class="carousel-item active">
+      <img src="{% static 'images/slide1.jpg' %}" class="d-block w-100"
+           style="height:80vh; object-fit:cover;" alt="Hospital">
+      <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-75 p-4 rounded">
+        <h1 class="display-4">Welcome to Our Hospital</h1>
+        <p class="lead">Advanced Care • 24/7 Emergency • Expert Doctors</p>
+      </div>
+    </div>
+
+    <div class="carousel-item">
+      <img src="{% static 'images/slide2.jpg' %}" class="d-block w-100"
+           style="height:80vh; object-fit:cover;" alt="Doctors">
+      <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-75 p-4 rounded">
+        <h1 class="display-4">Expert Medical Team</h1>
+        <p class="lead">Highly qualified and caring professionals</p>
+      </div>
+    </div>
+
+    <div class="carousel-item">
+      <img src="{% static 'images/slide3.jpg' %}" class="d-block w-100"
+           style="height:80vh; object-fit:cover;" alt="Facility">
+      <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-75 p-4 rounded">
+        <h1 class="display-4">Modern Facilities</h1>
+        <p class="lead">Latest technology for your comfort</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Slider Arrows -->
+  <a class="carousel-control-prev" href="#mainSlider" data-slide="prev">
+    <span class="carousel-control-prev-icon"></span>
+  </a>
+  <a class="carousel-control-next" href="#mainSlider" data-slide="next">
+    <span class="carousel-control-next-icon"></span>
+  </a>
+</div>
+
+<!-- MAIN CONTENT BELOW SLIDER -->
+<div class="container my-5">
+  <div class="row align-items-center">
+
+    <!-- Left: Welcome Text -->
+    <div class="col-lg-8">
+      <h1 class="display-4 font-weight-bold mb-4">
+        Welcome to hospital management system
+      </h1>
+      <p class="lead text-secondary" style="line-height:1.8;">
+        Hospital Management System is a system where you can take any type of services.
+        Med-info is designed for the convenience of the people.
+      </p>
+
+      <div class="mt-5">
+        <h3><a href="#" class="text-primary text-decoration-none">Departments</a></h3>
+        <h1 class="display-3 font-weight-bold">Medical services</h1>
+      </div>
+    </div>
+
+    <!-- Right: Quick Links -->
+    <div class="col-lg-4">
+      <h4 class="mb-4"><a href="#" class="text-primary text-decoration-none font-weight-bold">Request Appointments</a></h4>
+      <h4 class="mb-4"><a href="#" class="text-primary text-decoration-none font-weight-bold">Find Doctors</a></h4>
+      <h4 class="mb-4"><a href="#" class="text-primary text-decoration-none font-weight-bold">Location</a></h4>
+      <h4 class="mb-4"><a href="#" class="text-primary text-decoration-none font-weight-bold">Emergency Contact</a></h4>
+    </div>
+
+  </div>
+</div>
+
+<!-- DOCTORS SECTION WITH IMAGES -->
+<div class="bg-light py-5">
+  <div class="container">
+    <h2 class="text-center display-4 mb-5">Our Doctors</h2>
+    <div class="row text-center">
+
+      <div class="col-md-4 mb-4">
+        <img src="{% static 'images/doc1.jpg' %}" class="rounded-circle mb-3" width="180" height="180" alt="Dr. Sharma">
+        <h4>Dr. Raj Sharma</h4>
+        <p class="text-muted">Cardiologist</p>
+      </div>
+
+      <div class="col-md-4 mb-4">
+        <img src="{% static 'images/doc2.jpg' %}" class="rounded-circle mb-3" width="180" height="180" alt="Dr. Anita">
+        <h4>Dr. Anita KC</h4>
+        <p class="text-muted">Neurologist</p>
+      </div>
+
+      <div class="col-md-4 mb-4">
+        <img src="{% static 'images/doc3.jpg' %}" class="rounded-circle mb-3" width="180" height="180" alt="Dr. Kumar">
+        <h4>Dr. Suresh Kumar</h4>
+        <p class="text-muted">Orthopedic Surgeon</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+{% include 'footer.html' %}

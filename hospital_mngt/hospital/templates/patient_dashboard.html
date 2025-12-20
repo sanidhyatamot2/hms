@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Dashboard - Med-Info HMS{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 bg-light border-end">
+            <div class="p-4">
+                <h5 class="fw-bold text-primary"><i class="fas fa-user me-2"></i>Patient Portal</h5>
+                <hr>
+                <ul class="nav flex-column">
+                    <li class="nav-item mb-3">
+                        <a href="{% url 'patient_dashboard' %}" class="nav-link active bg-primary text-white rounded-pill px-4 py-3">
+                            <i class="fas fa-tachometer-alt me-3"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item mb-3">
+                        <a href="{% url 'patient_book_appointment' %}" class="nav-link text-primary border rounded-pill px-4 py-3">
+                            <i class="fas fa-calendar-plus me-3"></i>Book New Appointment
+                        </a>
+                    </li>
+                    <li class="nav-item mb-3">
+                        <a href="{% url 'patient_appointments' %}" class="nav-link text-primary border rounded-pill px-4 py-3">
+                            <i class="fas fa-calendar-check me-3"></i>My Appointments
+                        </a>
+                    </li>
+                    <li class="nav-item mb-3">
+                        <a href="#" class="nav-link text-primary border rounded-pill px-4 py-3">
+                            <i class="fas fa-file-medical me-3"></i>Medical Records
+                        </a>
+                    </li>
+                    <li class="nav-item mb-3">
+                        <a href="#" class="nav-link text-primary border rounded-pill px-4 py-3">
+                            <i class="fas fa-pills me-3"></i>Prescriptions
+                        </a>
+                    </li>
+                    <li class="nav-item mb-3">
+                        <a href="#" class="nav-link text-primary border rounded-pill px-4 py-3">
+                            <i class="fas fa-credit-card me-3"></i>Billing
+                        </a>
+                    </li>
+                </ul>
+                <hr>
+                <a href="{% url 'logout_admin' %}" class="btn btn-outline-danger w-100 py-3 rounded-pill">
+                    <i class="fas fa-sign-out-alt me-3"></i>Sign Out
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9">
+            <div class="p-4">
+                <h2 class="fw-bold">Dashboard</h2>
+                <p class="text-muted">Welcome back! Here's an overview of your health management.</p>
+
+                <!-- Role Card -->
+                <div class="card shadow-sm mb-4 border-0">
+                    <div class="card-body text-center py-4">
+                        <i class="fas fa-user fa-3x text-primary mb-3"></i>
+                        <h4>Your Role</h4>
+                        <span class="badge bg-primary fs-5 px-4 py-2">Patient</span>
+                    </div>
+                </div>
+
+                <!-- Upload Medical Report -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h4 class="fw-bold mb-3"><i class="fas fa-upload me-2"></i>Upload Medical Report</h4>
+                        <form method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <input type="text" name="title" class="form-control form-control-lg" placeholder="Report Title (e.g., Blood Test)" required>
+                            </div>
+                            <div class="mb-3">
+                                <input type="file" name="file" class="form-control form-control-lg" accept="image/*,application/pdf" required>
+                            </div>
+                            <div class="mb-3">
+                                <textarea name="description" class="form-control form-control-lg" placeholder="Description (optional)" rows="3"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-lg">Upload File</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card shadow-sm text-center border-0">
+                            <div class="card-body">
+                                <i class="fas fa-calendar-alt fa-2x text-success mb-3"></i>
+                                <h5>Today's Appointments</h5>
+                                <h3 class="fw-bold text-success">{{ today_appointments|default:"0" }}</h3>
+                                <small class="text-muted">Scheduled for today</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card shadow-sm text-center border-0">
+                            <div class="card-body">
+                                <i class="fas fa-file-medical fa-2x text-info mb-3"></i>
+                                <h5>Medical Records</h5>
+                                <h3 class="fw-bold text-info">{{ medical_files.count }}</h3>
+                                <small class="text-muted">Uploaded</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card shadow-sm text-center border-0">
+                            <div class="card-body">
+                                <i class="fas fa-receipt fa-2x text-warning mb-3"></i>
+                                <h5>Pending Bills</h5>
+                                <h3 class="fw-bold text-warning">0</h3>
+                                <small class="text-muted">Awaiting payment</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card shadow-sm text-center border-0">
+                            <div class="card-body">
+                                <i class="fas fa-notes-medical fa-2x text-danger mb-3"></i>
+                                <h5>Prescriptions</h5>
+                                <h3 class="fw-bold text-danger">0</h3>
+                                <small class="text-muted">Active</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card shadow-sm border-0 mb-5">
+                    <div class="card-body">
+                        <h4 class="fw-bold mb-4"><i class="fas fa-bolt me-2"></i>Quick Actions</h4>
+                        <div class="row text-center">
+                            <div class="col-md-6 mb-3">
+                                <a href="{% url 'patient_book_appointment' %}" class="btn btn-primary w-100 py-5 fw-bold shadow-lg rounded-4 d-flex flex-column align-items-center justify-content-center text-decoration-none text-white">
+                                    <i class="fas fa-calendar-plus fa-3x mb-3"></i>
+                                    <span class="fs-5">Book New Appointment</span>
+                                </a>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <a href="#" class="btn btn-outline-success w-100 py-5 fw-bold border-2 rounded-4 d-flex flex-column align-items-center justify-content-center text-decoration-none">
+                                    <i class="fas fa-comment-medical fa-3x mb-3"></i>
+                                    <span class="fs-5">Consult Doctor Online</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- My Medical Files -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h4 class="fw-bold mb-4"><i class="fas fa-folder-open me-2"></i>My Medical Files</h4>
+                        {% if medical_files %}
+                            <div class="row">
+                                {% for file in medical_files %}
+                                <div class="col-md-4 mb-4">
+                                    <div class="card h-100 shadow-sm">
+                                        {% if file.file.name|lower|slice:"-4:" in '.jpg,.jpeg,.png,.gif' %}
+                                            <img src="{{ file.file.url }}" class="card-img-top" style="height:200px; object-fit:cover;">
+                                        {% elif file.file.name|lower|slice:"-4:" == '.pdf' %}
+                                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height:200px;">
+                                                <i class="fas fa-file-pdf fa-5x text-danger"></i>
+                                            </div>
+                                        {% else %}
+                                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height:200px;">
+                                                <i class="fas fa-file fa-5x text-secondary"></i>
+                                            </div>
+                                        {% endif %}
+                                        <div class="card-body d-flex flex-column">
+                                            <h6 class="card-title">{{ file.title }}</h6>
+                                            <small class="text-muted mb-2">{{ file.uploaded_at|date:"M d, Y" }}</small>
+                                            {% if file.description %}
+                                                <p class="text-muted small flex-grow-1">{{ file.description }}</p>
+                                            {% endif %}
+                                            <a href="{{ file.file.url }}" target="_blank" class="btn btn-outline-primary btn-sm mt-auto">View / Download</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-muted">No medical files uploaded yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

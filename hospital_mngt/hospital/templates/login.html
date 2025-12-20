@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Med-Info HMS - Login{% endblock %}
+
+{% block content %}
+<div class="min-vh-100 d-flex align-items-center justify-content-center"
+     style="background: linear-gradient(135deg, #007bff 0%, #20c997 100%);">
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+            <div class="alert alert-danger text-center">{{ message }}</div>
+        {% endfor %}
+    </div>
+{% endif %}
+    <div class="text-center text-white mb-4">
+        <div class="bg-white rounded-4 p-3 d-inline-block shadow-lg">
+            <i class="fas fa-heartbeat fa-3x text-primary"></i>
+        </div>
+        <h1 class="display-5 fw-bold mt-3">Med-Info HMS</h1>
+        <p class="lead">Hospital Management System</p>
+    </div>
+
+    <div class="card shadow-lg p-4" style="width: 100%; max-width: 420px; border-radius: 20px;">
+        <div class="card-body">
+            <h3 class="text-center mb-4">Welcome</h3>
+            <p class="text-center text-muted mb-4">Sign in to your account or create a new one</p>
+
+            <ul class="nav nav-pills mb-4 justify-content-center" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active px-4 py-2" data-bs-toggle="pill" href="#admin">Admin</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link px-4 py-2" data-bs-toggle="pill" href="#doctor">Doctor</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link px-4 py-2" data-bs-toggle="pill" href="#patient">Patient</a>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <!-- Admin Login -->
+                <div id="admin" class="tab-pane active">
+                    <form method="post" action="{% url 'admin_login' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Username</label>
+                            <input type="text" name="username" class="form-control form-control-lg" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Password</label>
+                            <input type="password" name="password" class="form-control form-control-lg" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 py-3 fw-bold">Sign In as Admin</button>
+                    </form>
+                </div>
+
+                <!-- Doctor Login -->
+                <div id="doctor" class="tab-pane fade">
+                    <form method="post" action="{% url 'doctor_login' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" class="form-control form-control-lg" placeholder="doctor@medinfo.com" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Password</label>
+                            <input type="password" name="password" class="form-control form-control-lg" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 py-3 fw-bold">Sign In as Doctor</button>
+                    </form>
+                </div>
+
+                <!-- Patient Login -->
+                <div id="patient" class="tab-pane fade">
+                    <form method="post" action="{% url 'patient_login' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Email / Mobile</label>
+                            <input type="text" name="email_or_mobile" class="form-control form-control-lg" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Password</label>
+                            <input type="password" name="password" class="form-control form-control-lg" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 py-3 fw-bold">Sign In as Patient</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <small class="text-muted">Don't have an account? <a href="{% url 'signup' %}" class="text-primary">Sign Up</a></small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

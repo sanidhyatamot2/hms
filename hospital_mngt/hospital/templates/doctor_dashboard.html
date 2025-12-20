@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Doctor Dashboard - Med-Info HMS{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 bg-light border-end">
+            <div class="p-4">
+                <h5 class="fw-bold text-primary"><i class="fas fa-stethoscope me-2"></i>Doctor Portal</h5>
+                <hr>
+                <ul class="nav flex-column">
+                    <li class="nav-item mb-3">
+                        <a href="{% url 'doctor_dashboard' %}" class="nav-link active bg-primary text-white rounded-pill px-4 py-3">
+                            <i class="fas fa-tachometer-alt me-3"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item mb-3">
+                        <a href="{% url 'doctor_appointments' %}" class="nav-link text-primary border rounded-pill px-4 py-3">
+                            <i class="fas fa-calendar-check me-3"></i>My Appointments
+                        </a>
+                    </li>
+                    <li class="nav-item mb-3">
+                        <a href="#" class="nav-link text-primary border rounded-pill px-4 py-3">
+                            <i class="fas fa-users me-3"></i>My Patients
+                        </a>
+                    </li>
+                    <li class="nav-item mb-3">
+                        <a href="#" class="nav-link text-primary border rounded-pill px-4 py-3">
+                            <i class="fas fa-file-prescription me-3"></i>Prescriptions
+                        </a>
+                    </li>
+                </ul>
+                <hr>
+                <a href="{% url 'logout_admin' %}" class="btn btn-outline-danger w-100 py-3 rounded-pill">
+                    <i class="fas fa-sign-out-alt me-3"></i>Sign Out
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9">
+            <div class="p-4">
+                <h2 class="fw-bold">Welcome, Dr. {{ doctor.Name }}</h2>
+                <p class="text-muted">Here's an overview of your schedule and patients today.</p>
+
+                <!-- Role Card -->
+                <div class="card shadow-sm mb-4 border-0">
+                    <div class="card-body text-center py-4">
+                        <i class="fas fa-user-md fa-3x text-primary mb-3"></i>
+                        <h4>Your Role</h4>
+                        <span class="badge bg-primary fs-5 px-4 py-2">Doctor - {{ doctor.Special }}</span>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card shadow-sm text-center border-0">
+                            <div class="card-body">
+                                <i class="fas fa-calendar-day fa-2x text-success mb-3"></i>
+                                <h5>Today's Appointments</h5>
+                                <h3 class="fw-bold text-success">{{ today_appointments }}</h3>
+                                <small class="text-muted">Scheduled</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card shadow-sm text-center border-0">
+                            <div class="card-body">
+                                <i class="fas fa-users fa-2x text-info mb-3"></i>
+                                <h5>Total Patients</h5>
+                                <h3 class="fw-bold text-info">{{ total_patients }}</h3>
+                                <small class="text-muted">Under your care</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card shadow-sm text-center border-0">
+                            <div class="card-body">
+                                <i class="fas fa-clock fa-2x text-warning mb-3"></i>
+                                <h5>Pending Reviews</h5>
+                                <h3 class="fw-bold text-warning">0</h3>
+                                <small class="text-muted">Awaiting notes</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card shadow-sm text-center border-0">
+                            <div class="card-body">
+                                <i class="fas fa-prescription-bottle-alt fa-2x text-danger mb-3"></i>
+                                <h5>Prescriptions Today</h5>
+                                <h3 class="fw-bold text-danger">0</h3>
+                                <small class="text-muted">Issued</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h4 class="fw-bold mb-3"><i class="fas fa-bolt me-2"></i>Quick Actions</h4>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <a href="{% url 'doctor_appointments' %}" class="btn btn-outline-primary w-100 py-3">
+                                    <i class="fas fa-calendar-alt fa-2x mb-2 d-block"></i>
+                                    View Today's Schedule
+                                </a>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <a href="#" class="btn btn-outline-success w-100 py-3">
+                                    <i class="fas fa-user-plus fa-2x mb-2 d-block"></i>
+                                    Add Patient Notes
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

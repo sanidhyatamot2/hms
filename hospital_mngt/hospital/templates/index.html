@@ -1,0 +1,31 @@
+{% include "base.html" %}
+{% include 'navigation.html' %}
+
+
+{% block content %}
+<h1> Admin Dashboard</h1>
+
+
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm-4">
+            <h2 style="color: red">{{d}}</h2>
+            <a href="{% url 'view_doctor' %}"><h4 style="color:blue">Doctor</h4><hr class="rounded"> </a>
+
+        </div>
+        <div class="col-sm-4">
+            <h2 style="color: red">{{d}}</h2>
+            <a href="{% url 'view_patient' %}"><h4 style="color:blue">Patient</h4><hr class="rounded"> </a>
+
+
+        </div>
+        <div class="col-sm-4">
+            <h2 style="color: red">{{d}}</h2>
+            <a href="{% url 'view_appointment' %}"><h4 style="color:blue">Appointment</h4><hr class="rounded"> </a>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% include  'footer.html' %}
