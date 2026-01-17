@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}My Patients - Doctor Portal{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="text-center fw-bold text-primary mb-5">
+        <i class="fas fa-users me-3"></i>My Patients
+    </h2>
+
+    {% if patients %}
+        <div class="row g-4">
+            {% for patient in patients %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-user me-2"></i>{{ patient.Name }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Mobile:</strong> {{ patient.Mobile }}</p>
+                        <p><strong>Total Appointments:</strong> {{ patient.total_appointments }}</p>
+                        {% if patient.last_visit %}
+                            <p><strong>Last Visit:</strong> {{ patient.last_visit.date|date:"M d, Y" }} at {{ patient.last_visit.time }}</p>
+                        {% else %}
+                            <p class="text-muted">No appointments yet</p>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer bg-light text-center">
+                        <button type="button" class="btn btn-outline-primary btn-sm"
+                                data-bs-toggle="modal" data-bs-target="#patientRecordsModal"
+                                data-patient-id="{{ patient.id }}"
+                                data-patient-name="{{ patient.Name }}"
+                                data-patient-mobile="{{ patient.Mobile }}"
+                                data-total-appointments="{{ patient.total_appointments }}"
+                                data-last-visit="{% if patient.last_visit %}{{ patient.last_visit.date|date:'M d, Y' }} at {{ patient.last_visit.time }}{% else %}N/A{% endif %}">
+                            <i class="fas fa-file-medical me-1"></i>View Records
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-users-slash fa-5x text-muted mb-4"></i>
+            <h4 class="text-muted">No patients yet</h4>
+            <p class="text-muted">Patients will appear here once they book appointments with you.</p>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Detailed Patient Records Modal (Doctor View) -->
+<div class="modal fade" id="patientRecordsModal" tabindex="-1" aria-labelledby="patientRecordsLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0 rounded-4 overflow-hidden">
+            <!-- Header -->
+            <div class="modal-header bg-gradient-primary text-white border-0" style="background: linear-gradient(90deg, #007bff, #00c6ff);">
+                <h5 class="modal-title fw-bold" id="patientRecordsLabel">
+                    <i class="fas fa-user-md me-2"></i>Patient Records
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body bg-light" style="max-height: 80vh; overflow-y: auto;">
+                <!-- Patient Basic Info -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="mb-0"><i class="fas fa-user me-2"></i>Patient Information</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <p><strong>Name:</strong> <span id="modalPatientName"></span></p>
+                            </div>
+                            <div class="col-md-4">
+                                <p><strong>Mobile:</strong> <span id="modalPatientMobile"></span></p>
+                            </div>
+                            <div class="col-md-4">
+                                <p><strong>Total Visits:</strong> <span id="modalTotalAppointments"></span></p>
+                            </div>
+                        </div>
+                        <p><strong>Last Visit:</strong> <span id="modalLastVisit"></span></p>
+                    </div>
+                </div>
+
+                <!-- Uploaded Medical Files -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0"><i class="fas fa-folder-medical me-2"></i>Uploaded Medical Files & Records</h6>
+                        <small class="text-white">Patient's private uploads</small>
+                    </div>
+                    <div class="card-body">
+                        {% if patient.medical_files.exists %}
+                            <div class="row g-3">
+                                {% for file in patient.medical_files.all %}
+                                <div class="col-md-6">
+                                    <div class="card h-100 shadow-sm">
+                                        {% if file.file.name|lower|slice:"-4:" in '.jpg,.jpeg,.png,.gif' %}
+                                            <img src="{{ file.file.url }}" class="card-img-top" alt="{{ file.title }}" style="height:180px; object-fit:cover;">
+                                        {% elif file.file.name|lower|slice:"-4:" == '.pdf' %}
+                                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height:180px;">
+                                                <i class="fas fa-file-pdf fa-5x text-danger"></i>
+                                            </div>
+                                        {% else %}
+                                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height:180px;">
+                                                <i class="fas fa-file fa-5x text-secondary"></i>
+                                            </div>
+                                        {% endif %}
+                                        <div class="card-body">
+                                            <h6 class="card-title">{{ file.title }}</h6>
+                                            <small class="text-muted d-block mb-2">{{ file.uploaded_at|date:"M d, Y" }}</small>
+                                            {% if file.description %}
+                                                <p class="card-text small text-muted">{{ file.description|truncatewords:15 }}</p>
+                                            {% endif %}
+                                            <a href="{{ file.file.url }}" target="_blank" class="btn btn-sm btn-outline-primary mt-2">
+                                                <i class="fas fa-eye me-1"></i> View
+                                            </a>
+                                            <a href="{{ file.file.url }}" download class="btn btn-sm btn-outline-success mt-2">
+                                                <i class="fas fa-download me-1"></i> Download
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% empty %}
+                                <div class="col-12 text-center py-4">
+                                    <i class="fas fa-folder-open fa-4x text-muted mb-3"></i>
+                                    <p class="lead text-muted">No medical files uploaded by this patient yet.</p>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-folder-open fa-5x text-muted mb-4"></i>
+                                <p class="lead text-muted">No medical files available for this patient.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Appointment History with this Doctor -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0"><i class="fas fa-history me-2"></i>Appointment History with You</h6>
+                    </div>
+                    <div class="card-body">
+                        {% with history=Appointment.objects.filter(Patient=patient, Doctor=doctor).order_by('-date') %}
+                            {% if history %}
+                                <div class="list-group">
+                                    {% for apt in history %}
+                                    <div class="list-group-item list-group-item-action">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1">
+                                                {{ apt.date|date:"M d, Y" }} at {{ apt.time }}
+                                            </h6>
+                                            <small>
+                                                <span class="badge {% if apt.date > today %}bg-success{% elif apt.date == today %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                                                    {% if apt.date > today %}Upcoming{% elif apt.date == today %}Today{% else %}Completed{% endif %}
+                                                </span>
+                                            </small>
+                                        </div>
+                                        <p class="mb-1 text-muted">Status: {{ apt.status|default:"Scheduled" }}</p>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-history fa-4x text-muted mb-3"></i>
+                                    <p class="lead text-muted">No appointment history with you yet.</p>
+                                </div>
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer bg-light border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript to Populate Basic Info (files/history are already loaded via template) -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const modal = document.getElementById('patientRecordsModal');
+    if (!modal) return;
+
+    modal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+
+        document.getElementById('modalPatientName').textContent = button.getAttribute('data-patient-name') || 'N/A';
+        document.getElementById('modalPatientMobile').textContent = button.getAttribute('data-patient-mobile') || 'N/A';
+        document.getElementById('modalTotalAppointments').textContent = button.getAttribute('data-total-appointments') || '0';
+        document.getElementById('modalLastVisit').textContent = button.getAttribute('data-last-visit') || 'N/A';
+    });
+});
+</script>
+
+{% endblock %}

@@ -31,10 +31,27 @@ class Appointment(models.Model):
 
 class MedicalFile(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='medical_files')
-    title = models.CharField(max_length=200, default="Medical Report")
-    file = models.FileField(upload_to='medical_files/%Y/%m/%d/')  # saves to media/medical_files/year/month/day/
-    uploaded_at = models.DateTimeField(auto_now_add=True)
+    title = models.CharField(max_length=200)
+    file = models.FileField(upload_to='medical_files/%Y/%m/%d/')
     description = models.TextField(blank=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.title} - {self.patient.Name}"
+        return f"{self.title} - {self.patient}"
+    
+class Prescription(models.Model):
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
+    doctor = models.ForeignKey(Doctor, on_delete=models.SET_NULL, null=True)
+    medicine_name = models.CharField(max_length=200)
+    dosage = models.CharField(max_length=100)
+    duration_days = models.IntegerField()
+    date_issued = models.DateField(auto_now_add=True)
+    notes = models.TextField(blank=True)
+
+class Bill(models.Model):
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
+    appointment = models.ForeignKey(Appointment, on_delete=models.SET_NULL, null=True)
+    invoice_number = models.CharField(max_length=50, unique=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    date = models.DateField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('paid', 'Paid'), ('overdue', 'Overdue')])

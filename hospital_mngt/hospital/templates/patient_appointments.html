@@ -6,15 +6,21 @@
 <div class="container my-5">
     <div class="row">
         <div class="col-lg-10 mx-auto">
-            <h2 class="text-center mb-5 fw-bold text-primary">
-                <i class="fas fa-calendar-check me-3"></i>My Appointments
-            </h2>
+            <!-- Header with Patient Info -->
+            <div class="text-center mb-5">
+                <h2 class="fw-bold text-primary">
+                    <i class="fas fa-calendar-check me-3"></i>My Appointments
+                </h2>
+                <p class="text-muted lead">
+                    <strong>{{ patient.Name }}</strong> • {{ patient.Mobile }}
+                </p>
+            </div>
 
             {% if appointments %}
-                <div class="card shadow-lg border-0">
+                <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
                     <div class="card-body p-0">
                         <div class="table-responsive">
-                            <table class="table table-hover mb-0">
+                            <table class="table table-hover mb-0 align-middle">
                                 <thead class="table-primary">
                                     <tr>
                                         <th class="text-center">#</th>
@@ -23,7 +29,7 @@
                                         <th>Date</th>
                                         <th>Time</th>
                                         <th>Status</th>
-                                        <th>Action</th>
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -46,14 +52,27 @@
                                             {% endif %}
                                         </td>
                                         <td>
+                                            <!-- View Details Button -->
+                                            <button type="button" class="btn btn-primary btn-sm me-1"
+                                                    data-bs-toggle="modal" data-bs-target="#appointmentDetailsModal"
+                                                    data-apt-id="{{ apt.id }}"
+                                                    data-patient-name="{{ patient.Name }}"
+                                                    data-patient-mobile="{{ patient.Mobile }}"
+                                                    data-doctor-name="Dr. {{ apt.Doctor.Name }}"
+                                                    data-doctor-special="{{ apt.Doctor.Special }}"
+                                                    data-date="{{ apt.date|date:'M d, Y' }}"
+                                                    data-time="{{ apt.time }}"
+                                                    data-status="{% if apt.date > today %}Upcoming{% elif apt.date == today %}Today{% else %}Completed{% endif %}">
+                                                <i class="fas fa-eye me-1"></i> Details
+                                            </button>
+
+                                            <!-- Cancel Button (only for upcoming) -->
                                             {% if apt.date >= today %}
                                                 <a href="{% url 'cancel_appointment' apt.id %}"
-                                                   onclick="return confirm('Are you sure you want to cancel this appointment?')"
+                                                   onclick="return confirm('Are you sure you want to cancel this appointment? This cannot be undone.')"
                                                    class="btn btn-danger btn-sm">
-                                                    <i class="fas fa-times me-1"></i>Cancel
+                                                    <i class="fas fa-times me-1"></i> Cancel
                                                 </a>
-                                            {% else %}
-                                                <span class="text-muted small">—</span>
                                             {% endif %}
                                         </td>
                                     </tr>
@@ -64,16 +83,120 @@
                     </div>
                 </div>
             {% else %}
-                <div class="text-center py-5">
+                <div class="text-center py-5 bg-light rounded-4 shadow">
                     <i class="fas fa-calendar-times fa-5x text-muted mb-4"></i>
-                    <h4>No appointments booked yet.</h4>
-                    <p class="text-muted">Start by booking your first appointment!</p>
-                    <a href="{% url 'patient_book_appointment' %}" class="btn btn-primary btn-lg mt-3">
-                        <i class="fas fa-calendar-plus me-2"></i>Book Appointment
+                    <h4 class="text-muted">No appointments booked yet</h4>
+                    <p class="text-muted mb-4">Start by booking your first appointment!</p>
+                    <a href="{% url 'patient_book_appointment' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-calendar-plus me-2"></i>Book Appointment Now
                     </a>
                 </div>
             {% endif %}
         </div>
     </div>
 </div>
+
+<!-- Professional Appointment Details Modal -->
+<div class="modal fade" id="appointmentDetailsModal" tabindex="-1" aria-labelledby="appointmentDetailsLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content shadow-lg border-0 rounded-4 overflow-hidden">
+            <div class="modal-header bg-gradient-primary text-white border-0" style="background: linear-gradient(90deg, #007bff, #00c6ff);">
+                <h5 class="modal-title fw-bold" id="appointmentDetailsLabel">
+                    <i class="fas fa-calendar-check me-2"></i>Appointment Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body bg-light">
+                <div class="row g-4">
+                    <!-- Patient Info -->
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header bg-info text-white">
+                                <h6 class="mb-0"><i class="fas fa-user me-2"></i>Patient</h6>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Name:</strong> <span id="modalPatientName"></span></p>
+                                <p><strong>Mobile:</strong> <span id="modalPatientMobile"></span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Doctor Info -->
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header bg-primary text-white">
+                                <h6 class="mb-0"><i class="fas fa-user-md me-2"></i>Doctor</h6>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Name:</strong> <span id="modalDoctorName"></span></p>
+                                <p><strong>Specialization:</strong> <span id="modalDoctorSpecial"></span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Appointment Info -->
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-success text-white">
+                                <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Appointment Information</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row text-center">
+                                    <div class="col-md-4 mb-3">
+                                        <strong>Date</strong><br>
+                                        <span id="modalDate" class="fs-5 fw-bold"></span>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <strong>Time</strong><br>
+                                        <span id="modalTime" class="fs-5 fw-bold"></span>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <strong>Status</strong><br>
+                                        <span id="modalStatus" class="badge fs-5 px-3 py-2"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript to Populate Modal -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const modal = document.getElementById('appointmentDetailsModal');
+    if (!modal) return;
+
+    modal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+
+        const patientName = button.getAttribute('data-patient-name');
+        const patientMobile = button.getAttribute('data-patient-mobile');
+        const doctorName = button.getAttribute('data-doctor-name');
+        const doctorSpecial = button.getAttribute('data-doctor-special');
+        const date = button.getAttribute('data-date');
+        const time = button.getAttribute('data-time');
+        const status = button.getAttribute('data-status');
+
+        document.getElementById('modalPatientName').textContent = patientName;
+        document.getElementById('modalPatientMobile').textContent = patientMobile;
+        document.getElementById('modalDoctorName').textContent = doctorName;
+        document.getElementById('modalDoctorSpecial').textContent = doctorSpecial;
+        document.getElementById('modalDate').textContent = date;
+        document.getElementById('modalTime').textContent = time;
+
+        const statusEl = document.getElementById('modalStatus');
+        statusEl.textContent = status;
+        if (status === 'Upcoming') statusEl.className = 'badge bg-success fs-5 px-3 py-2';
+        else if (status === 'Today') statusEl.className = 'badge bg-warning text-dark fs-5 px-3 py-2';
+        else statusEl.className = 'badge bg-secondary fs-5 px-3 py-2';
+    });
+});
+</script>
 {% endblock %}

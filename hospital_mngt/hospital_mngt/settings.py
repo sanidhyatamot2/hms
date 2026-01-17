@@ -119,3 +119,10 @@ STATIC_URL='/static/'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Media files (uploaded by users)
+MEDIA_URL = '/media/'                  # URL prefix for media files
+MEDIA_ROOT = BASE_DIR / 'media'        # Physical folder where files are stored
+
+# Make sure DEBUG is True during development
+DEBUG = True

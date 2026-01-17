@@ -1,4 +1,6 @@
 from django.urls import path
+from django.conf import settings
+from django.conf.urls.static import static
 
 from .views import (
     About, Home, Contact,
@@ -7,9 +9,9 @@ from .views import (
     View_Doctor, Delete_Doctor, Add_Doctor,
     View_Patient, Delete_Patient, Add_Patient,
     View_Appointment, Add_Appointment, Delete_Appointment,
-    signup, doctor_signup, patient_signup,  # signup views
-    patient_dashboard,doctor_dashboard,doctor_appointments,
-    patient_book_appointment, patient_appointments,cancel_appointment# patient dashboard view
+    signup, doctor_signup, patient_signup,  
+    patient_dashboard,doctor_dashboard,doctor_appointments, doctor_prescriptions,doctor_my_patients,
+    patient_book_appointment, patient_appointments,cancel_appointment# 
 )
 
 urlpatterns = [
@@ -50,9 +52,14 @@ urlpatterns = [
 
     path('doctor-dashboard/', doctor_dashboard, name='doctor_dashboard'),
     path('doctor-appointments/', doctor_appointments, name='doctor_appointments'),
+    path('doctor-my-patients/', doctor_my_patients, name='doctor_my_patients'),
+    path('doctor-prescriptions/', doctor_prescriptions, name='doctor_prescriptions'),
 
     path('patient-book-appointment/', patient_book_appointment, name='patient_book_appointment'),
 
     path('patient-appointments/', patient_appointments, name='patient_appointments'),
     path('cancel-appointment/<int:apt_id>/', cancel_appointment, name='cancel_appointment'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

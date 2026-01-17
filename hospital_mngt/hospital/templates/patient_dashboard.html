@@ -26,21 +26,26 @@
                             <i class="fas fa-calendar-check me-3"></i>My Appointments
                         </a>
                     </li>
-                    <li class="nav-item mb-3">
-                        <a href="#" class="nav-link text-primary border rounded-pill px-4 py-3">
-                            <i class="fas fa-file-medical me-3"></i>Medical Records
-                        </a>
-                    </li>
-                    <li class="nav-item mb-3">
-                        <a href="#" class="nav-link text-primary border rounded-pill px-4 py-3">
-                            <i class="fas fa-pills me-3"></i>Prescriptions
-                        </a>
-                    </li>
-                    <li class="nav-item mb-3">
-                        <a href="#" class="nav-link text-primary border rounded-pill px-4 py-3">
-                            <i class="fas fa-credit-card me-3"></i>Billing
-                        </a>
-                    </li>
+                    <!-- Medical Records -->
+                <li class="nav-item mb-3">
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#medicalRecordsModal" class="nav-link text-primary border rounded-pill px-4 py-3">
+                        <i class="fas fa-file-medical me-3"></i>Medical Records
+                    </a>
+                </li>
+
+                <!-- Prescriptions -->
+                <li class="nav-item mb-3">
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#prescriptionsModal" class="nav-link text-primary border rounded-pill px-4 py-3">
+                        <i class="fas fa-pills me-3"></i>Prescriptions
+                    </a>
+                </li>
+
+                <!-- Billing -->
+                <li class="nav-item mb-3">
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#billingModal" class="nav-link text-primary border rounded-pill px-4 py-3">
+                        <i class="fas fa-credit-card me-3"></i>Billing
+                    </a>
+                </li>
                 </ul>
                 <hr>
                 <a href="{% url 'logout_admin' %}" class="btn btn-outline-danger w-100 py-3 rounded-pill">
@@ -186,6 +191,185 @@
                         {% endif %}
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Medical Records Modal -->
+<div class="modal fade" id="medicalRecordsModal" tabindex="-1" aria-labelledby="medicalRecordsLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0 rounded-4">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="medicalRecordsLabel">
+                    <i class="fas fa-folder-medical me-2"></i>My Medical Records
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                {% if medical_files %}
+                    <div class="row g-3">
+                        {% for file in medical_files %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100 shadow-sm">
+                                <!-- File Preview Area -->
+                                {% if file.file.name|lower|slice:"-4:" in '.jpg,.jpeg,.png,.gif' %}
+                                    <img src="{{ file.file.url }}" class="card-img-top" alt="{{ file.title }}" style="height: 200px; object-fit: cover;">
+                                {% elif file.file.name|lower|slice:"-4:" == '.pdf' %}
+                                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                                        <i class="fas fa-file-pdf fa-5x text-danger"></i>
+                                    </div>
+                                {% else %}
+                                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                                        <i class="fas fa-file fa-5x text-secondary"></i>
+                                    </div>
+                                {% endif %}
+
+                                <!-- File Info & Buttons -->
+                                <div class="card-body d-flex flex-column">
+                                    <h6 class="card-title mb-1">{{ file.title }}</h6>
+                                    <small class="text-muted d-block mb-2">{{ file.uploaded_at|date:"M d, Y" }}</small>
+                                    {% if file.description %}
+                                        <p class="card-text small text-muted flex-grow-1">{{ file.description|truncatewords:20 }}</p>
+                                    {% endif %}
+
+                                    <!-- View & Download Buttons - Side by Side -->
+                                    <div class="mt-auto d-flex gap-2">
+                                        <a href="{{ file.file.url }}" target="_blank" class="btn btn-sm btn-outline-primary flex-fill">
+                                            <i class="fas fa-eye me-1"></i> View
+                                        </a>
+                                        <a href="{{ file.file.url }}" download class="btn btn-sm btn-outline-success flex-fill">
+                                            <i class="fas fa-download me-1"></i> Download
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-12 text-center py-5">
+                            <i class="fas fa-folder-open fa-5x text-muted mb-4"></i>
+                            <p class="lead">No medical records uploaded yet</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-folder-open fa-5x text-muted mb-4"></i>
+                        <h5 class="text-muted">No medical records yet</h5>
+                        <p class="text-muted">Upload your reports in the dashboard section above.</p>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 2. Prescriptions Modal -->
+<div class="modal fade" id="prescriptionsModal" tabindex="-1" aria-labelledby="prescriptionsLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0 rounded-4">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="prescriptionsLabel">
+                    <i class="fas fa-prescription-bottle-alt me-2"></i>My Prescriptions
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                {% if prescriptions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Medicine</th>
+                                    <th>Dosage</th>
+                                    <th>Duration</th>
+                                    <th>Doctor</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Replace with real loop when you add Prescription model -->
+                                <tr>
+                                    <td>Paracetamol</td>
+                                    <td>500mg, 1 tab 3x/day</td>
+                                    <td>7 days</td>
+                                    <td>Dr. Sanduk Ruit</td>
+                                    <td><span class="badge bg-success">Active</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-prescription-bottle-alt fa-5x text-muted mb-4"></i>
+                        <h5>No prescriptions yet</h5>
+                        <p class="text-muted">Your doctor will add prescriptions after consultation.</p>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 3. Billing Modal -->
+<div class="modal fade" id="billingModal" tabindex="-1" aria-labelledby="billingLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0 rounded-4">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="billingLabel">
+                    <i class="fas fa-credit-card me-2"></i>Billing & Payments
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="mb-0">Total Due</h5>
+                    <h4 class="text-danger fw-bold">$ {{ total_due|default:"0.00" }}</h4>
+                </div>
+
+                {% if bills %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Invoice #</th>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Replace with real loop when you add Bill model -->
+                                <tr>
+                                    <td>#INV-001</td>
+                                    <td>Jan 11, 2026</td>
+                                    <td>Consultation + Eye Test</td>
+                                    <td class="fw-bold">$75.00</td>
+                                    <td><span class="badge bg-danger">Pending</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success">Pay Now</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-file-invoice-dollar fa-5x text-muted mb-4"></i>
+                        <h5>No bills yet</h5>
+                        <p class="text-muted">Billing will appear after appointments or services.</p>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>

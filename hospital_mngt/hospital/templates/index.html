@@ -1,31 +1,69 @@
-{% include "base.html" %}
-{% include 'navigation.html' %}
+{%include 'base.html'%}
+{%load static%}
+{%include 'navigation.html'%}
 
 
 {% block content %}
-<h1> Admin Dashboard</h1>
 
+<style>
+    body {
+        background-color: #f0f2f5;
+    }
+    .circle-card {
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-weight: bold;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+    .circle-card:hover {
+        transform: translateY(-10px) scale(1.05);
+        box-shadow: 0 15px 30px rgba(5, 20, 219, 0.465);
+    }
+    .circle-number {
+        font-size: 48px;
+    }
+    .circle-label {
+        font-size: 20px;
+        margin-top: 10px;
+    }
+</style>
 
+<div class="container mt-5">
+    <h1 class="text-center mb-5 text-dark fw-bold">Admin Dashboard</h1>
 
-<div class="container">
-    <div class="row">
-        <div class="col-sm-4">
-            <h2 style="color: red">{{d}}</h2>
-            <a href="{% url 'view_doctor' %}"><h4 style="color:blue">Doctor</h4><hr class="rounded"> </a>
+    <div class="row justify-content-center g-5">
+        
 
+        <div class="col-md-4 text-center">
+            <a href="{% url 'view_doctor' %}" class="circle-card bg-primary">
+                <div class="circle-number" style="color: white;">{{ d }}</div>
+                <div class="circle-label">Doctors</div>
+            </a>
         </div>
-        <div class="col-sm-4">
-            <h2 style="color: red">{{d}}</h2>
-            <a href="{% url 'view_patient' %}"><h4 style="color:blue">Patient</h4><hr class="rounded"> </a>
 
-
+        <div class="col-md-4 text-center">
+            <a href="{% url 'view_patient' %}" class="circle-card bg-primary">
+                <div class="circle-number" style="color: white;">{{ p }}</div>
+                <div class="circle-label">Patients</div>
+            </a>
         </div>
-        <div class="col-sm-4">
-            <h2 style="color: red">{{d}}</h2>
-            <a href="{% url 'view_appointment' %}"><h4 style="color:blue">Appointment</h4><hr class="rounded"> </a>
 
+        <div class="col-md-4 text-center">
+            <a href="{% url 'view_appointment' %}" class="circle-card bg-primary">
+                <div class="circle-number" style="color: white;">{{ a}}</div>
+                <div class="circle-label">Appointments</div>
+            </a>
         </div>
+
     </div>
 </div>
+
 {% endblock %}
-{% include  'footer.html' %}

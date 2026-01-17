@@ -4,6 +4,7 @@ from django.contrib import messages
 from .models import Doctor, Patient, Appointment
 from datetime import date
 from datetime import date as dt_date
+from .models import Patient, MedicalFile, Appointment  # ← ADD MedicalFile here
 
 
 # ===================== PUBLIC PAGES =====================
@@ -266,15 +267,47 @@ def patient_dashboard(request):
     if request.session.get('user_type') != 'patient':
         return redirect('main_login')
 
-    # You can pass patient data here later
     patient_id = request.session.get('patient_id')
-    patient = Patient.objects.get(id=patient_id) if patient_id else None
+    try:
+        patient = Patient.objects.get(id=patient_id)
+    except Patient.DoesNotExist:
+        messages.error(request, "Patient session invalid. Please login again.")
+        return redirect('main_login')
 
+    # Handle medical file upload (your existing logic - kept as is)
+    if request.method == "POST" and 'file' in request.FILES:
+        title = request.POST.get('title', 'Untitled Report')
+        description = request.POST.get('description', '')
+        file = request.FILES['file']
+        MedicalFile.objects.create(
+            patient=patient,
+            title=title,
+            description=description,
+            file=file
+        )
+        messages.success(request, "Medical file uploaded successfully!")
+        return redirect('patient_dashboard')
+
+    # Get today's date
+    today = date.today()
+
+    # Prepare context data for modals and dashboard
     context = {
-        'patient': patient
+        'patient': patient,
+        'medical_files': patient.medical_files.all().order_by('-uploaded_at'),  # Real uploaded files
+        'today_appointments': Appointment.objects.filter(
+            Patient=patient,
+            date=today
+        ).count(),  # Today's appointments count
+        # Prescriptions - placeholder (will be real when you add Prescription model)
+        'prescriptions': [],  # Replace with patient.prescriptions.all() later
+        # Billing - placeholder (will be real when you add Bill model)
+        'bills': [],          # Replace with patient.bills.all() later
+        'total_due': 0.00,    # Replace with sum of pending bills later
+        'today': today,
     }
-    return render(request, 'patient_dashboard.html', context)
 
+    return render(request, 'patient_dashboard.html', context)
 
 def doctor_dashboard(request):
     if request.session.get('user_type') != 'doctor':
@@ -298,17 +331,59 @@ def doctor_dashboard(request):
 def doctor_appointments(request):
     if request.session.get('user_type') != 'doctor':
         return redirect('main_login')
-
+    
     doctor_id = request.session.get('doctor_id')
     doctor = Doctor.objects.get(id=doctor_id)
+    
+    # Get all appointments for this doctor
     appointments = Appointment.objects.filter(Doctor=doctor).order_by('-date', '-time')
-
+    
+    # Pre-load uploaded medical files for each patient in appointments
+    for apt in appointments:
+        apt.patient_files = apt.Patient.medical_files.all().order_by('-uploaded_at')  # Real files
+    
     context = {
+        'doctor': doctor,
         'appointments': appointments,
-        'today': dt_date.today()
+        'today': dt_date.today(),
     }
     return render(request, 'doctor_appointments.html', context)
 
+def doctor_my_patients(request):
+    if request.session.get('user_type') != 'doctor':
+        return redirect('main_login')
+    
+    doctor_id = request.session.get('doctor_id')
+    doctor = Doctor.objects.get(id=doctor_id)
+    
+    patients = Patient.objects.filter(appointment__Doctor=doctor).distinct()
+    
+    # Pre-calculate totals and last visit (already good)
+    for patient in patients:
+        patient.total_appointments = Appointment.objects.filter(Patient=patient, Doctor=doctor).count()
+        patient.last_visit = Appointment.objects.filter(Patient=patient, Doctor=doctor).order_by('-date').first()
+    
+    context = {
+        'doctor': doctor,
+        'patients': patients,
+    }
+    return render(request, 'doctor_my_patients.html', context)
+
+def doctor_prescriptions(request):
+    if request.session.get('user_type') != 'doctor':
+        return redirect('main_login')
+    
+    doctor_id = request.session.get('doctor_id')
+    doctor = Doctor.objects.get(id=doctor_id)
+    
+    # Placeholder: Later you can add real Prescription model
+    prescriptions = []  # Replace with real query when model exists
+    
+    context = {
+        'doctor': doctor,
+        'prescriptions': prescriptions,
+    }
+    return render(request, 'doctor_prescriptions.html', context)
 
 def patient_book_appointment(request):
     if request.session.get('user_type') != 'patient':
@@ -335,16 +410,17 @@ def patient_book_appointment(request):
 def patient_appointments(request):
     if request.session.get('user_type') != 'patient':
         return redirect('main_login')
-
+    
     patient_id = request.session.get('patient_id')
+    patient = Patient.objects.get(id=patient_id)
     appointments = Appointment.objects.filter(Patient_id=patient_id).order_by('-date', '-time')
-
+    
     context = {
+        'patient': patient,  # pass patient for name/mobile
         'appointments': appointments,
         'today': dt_date.today()
     }
     return render(request, 'patient_appointments.html', context)
-
 
 def cancel_appointment(request, apt_id):
     if request.session.get('user_type') != 'patient':
