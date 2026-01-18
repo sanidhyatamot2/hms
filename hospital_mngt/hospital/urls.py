@@ -11,7 +11,7 @@ from .views import (
     View_Appointment, Add_Appointment, Delete_Appointment,
     signup, doctor_signup, patient_signup,  
     patient_dashboard,doctor_dashboard,doctor_appointments, doctor_prescriptions,doctor_my_patients,
-    patient_book_appointment, patient_appointments,cancel_appointment# 
+    patient_book_appointment, patient_appointments,cancel_appointment, prescribe_medicine#
 )
 
 urlpatterns = [
@@ -59,6 +59,7 @@ urlpatterns = [
 
     path('patient-appointments/', patient_appointments, name='patient_appointments'),
     path('cancel-appointment/<int:apt_id>/', cancel_appointment, name='cancel_appointment'),
+    path('doctor/prescribe/<int:patient_id>/', prescribe_medicine, name='prescribe_medicine'),
 ]
 
 if settings.DEBUG:

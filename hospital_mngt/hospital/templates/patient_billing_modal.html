@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- This is just the modal content - include it in your main patient_dashboard.html -->
+<div class="modal fade" id="billingModal" tabindex="-1" aria-labelledby="billingLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0 rounded-4">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="billingLabel">
+                    <i class="fas fa-credit-card me-2"></i>Billing & Payments
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="mb-0">Total Due</h5>
+                    <h4 class="text-danger fw-bold">NPR {{ total_due|default:"0.00" }}</h4>
+                </div>
+
+                {% if bills %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Bill #</th>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Due</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for bill in bills %}
+                                <tr>
+                                    <td>{{ bill.bill_number }}</td>
+                                    <td>{{ bill.issue_date }}</td>
+                                    <td>
+                                        {% if bill.appointment %}
+                                            Appointment #{{ bill.appointment.id }}
+                                        {% else %}
+                                            General Charges
+                                        {% endif %}
+                                    </td>
+                                    <td class="fw-bold">NPR {{ bill.total_amount }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if bill.status == 'paid' %}success{% elif bill.status == 'partial' %}warning{% else %}danger{% endif %}">
+                                            {{ bill.status|title }}
+                                        </span>
+                                    </td>
+                                    <td class="text-danger fw-bold">NPR {{ bill.balance_due }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-file-invoice-dollar fa-5x text-muted mb-4"></i>
+                        <h5 class="text-muted">No pending bills</h5>
+                        <p class="text-muted">Your bills will appear here after appointments or services.</p>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Prescribe Medicine - {{ patient.Name }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="text-center fw-bold text-primary mb-4">
+        <i class="fas fa-prescription-bottle-alt me-2"></i>
+        Prescribe Medicine for {{ patient.Name }}
+    </h2>
+
+    <div class="card shadow-lg border-0">
+        <div class="card-body">
+            <form method="POST" class="needs-validation" novalidate>
+                {% csrf_token %}
+
+                <!-- General Notes -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Additional Notes (optional)</label>
+                    <textarea name="notes" class="form-control" rows="3" 
+                              placeholder="Allergies, special instructions, follow-up advice..."></textarea>
+                </div>
+
+                <!-- Medicines Table (start with one row) -->
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered" id="medicineTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Medicine Name</th>
+                                <th>Dosage</th>
+                                <th>Duration (days)</th>
+                                <th>Instructions (optional)</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="medicine-row">
+                                <td><input type="text" name="medicine_name[]" class="form-control" required></td>
+                                <td><input type="text" name="dosage[]" class="form-control" required placeholder="e.g. 500mg 1 tab 3x/day"></td>
+                                <td><input type="number" name="duration_days[]" class="form-control" min="1" required></td>
+                                <td><input type="text" name="instructions[]" class="form-control" placeholder="After food, etc."></td>
+                                <td><button type="button" class="btn btn-danger btn-sm remove-row">Remove</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Add Row Button -->
+                <button type="button" id="addRow" class="btn btn-success mb-4">
+                    <i class="fas fa-plus me-1"></i>Add Another Medicine
+                </button>
+
+                <!-- Submit -->
+                <div class="text-end">
+                    <button type="submit" class="btn btn-primary btn-lg px-5">
+                        <i class="fas fa-save me-1"></i>Issue Prescription
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Dynamic Rows -->
+<script>
+document.getElementById('addRow').addEventListener('click', function() {
+    const table = document.getElementById('medicineTable').getElementsByTagName('tbody')[0];
+    const row = table.insertRow();
+    row.className = 'medicine-row';
+    
+    row.innerHTML = `
+        <td><input type="text" name="medicine_name[]" class="form-control" required></td>
+        <td><input type="text" name="dosage[]" class="form-control" required></td>
+        <td><input type="number" name="duration_days[]" class="form-control" min="1" required></td>
+        <td><input type="text" name="instructions[]" class="form-control"></td>
+        <td><button type="button" class="btn btn-danger btn-sm remove-row">Remove</button></td>
+    `;
+    
+    // Add remove functionality to new row
+    row.querySelector('.remove-row').addEventListener('click', function() {
+        if (table.rows.length > 1) {
+            row.remove();
+        }
+    });
+});
+
+// Remove row on click (for existing rows too)
+document.querySelectorAll('.remove-row').forEach(btn => {
+    btn.addEventListener('click', function() {
+        if (document.querySelectorAll('.medicine-row').length > 1) {
+            this.closest('tr').remove();
+        }
+    });
+});
+</script>
+{% endblock %}

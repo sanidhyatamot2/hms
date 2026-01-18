@@ -26,7 +26,8 @@
                         {% endif %}
                     </div>
                     <div class="card-footer bg-light text-center">
-                        <button type="button" class="btn btn-outline-primary btn-sm"
+                        <!-- View Records (modal trigger) -->
+                        <button type="button" class="btn btn-outline-primary btn-sm me-2"
                                 data-bs-toggle="modal" data-bs-target="#patientRecordsModal"
                                 data-patient-id="{{ patient.id }}"
                                 data-patient-name="{{ patient.Name }}"
@@ -35,6 +36,12 @@
                                 data-last-visit="{% if patient.last_visit %}{{ patient.last_visit.date|date:'M d, Y' }} at {{ patient.last_visit.time }}{% else %}N/A{% endif %}">
                             <i class="fas fa-file-medical me-1"></i>View Records
                         </button>
+
+                        <!-- Prescribe Medicine (fixed link) -->
+                        <a href="{% url 'prescribe_medicine' patient_id=patient.id %}" 
+                           class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-prescription-bottle-alt me-1"></i>Prescribe Medicine
+                        </a>
                     </div>
                 </div>
             </div>
@@ -91,19 +98,19 @@
                         <small class="text-white">Patient's private uploads</small>
                     </div>
                     <div class="card-body">
-                        {% if patient.medical_files.exists %}
+                        {% if patient.medical_files.all %}
                             <div class="row g-3">
                                 {% for file in patient.medical_files.all %}
                                 <div class="col-md-6">
                                     <div class="card h-100 shadow-sm">
                                         {% if file.file.name|lower|slice:"-4:" in '.jpg,.jpeg,.png,.gif' %}
-                                            <img src="{{ file.file.url }}" class="card-img-top" alt="{{ file.title }}" style="height:180px; object-fit:cover;">
+                                            <img src="{{ file.file.url }}" class="card-img-top" alt="{{ file.title }}" style="height: 180px; object-fit: cover;">
                                         {% elif file.file.name|lower|slice:"-4:" == '.pdf' %}
-                                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height:180px;">
+                                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 180px;">
                                                 <i class="fas fa-file-pdf fa-5x text-danger"></i>
                                             </div>
                                         {% else %}
-                                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height:180px;">
+                                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 180px;">
                                                 <i class="fas fa-file fa-5x text-secondary"></i>
                                             </div>
                                         {% endif %}
@@ -113,12 +120,14 @@
                                             {% if file.description %}
                                                 <p class="card-text small text-muted">{{ file.description|truncatewords:15 }}</p>
                                             {% endif %}
-                                            <a href="{{ file.file.url }}" target="_blank" class="btn btn-sm btn-outline-primary mt-2">
-                                                <i class="fas fa-eye me-1"></i> View
-                                            </a>
-                                            <a href="{{ file.file.url }}" download class="btn btn-sm btn-outline-success mt-2">
-                                                <i class="fas fa-download me-1"></i> Download
-                                            </a>
+                                            <div class="mt-2 d-flex gap-2">
+                                                <a href="{{ file.file.url }}" target="_blank" class="btn btn-sm btn-outline-primary flex-fill">
+                                                    <i class="fas fa-eye me-1"></i> View
+                                                </a>
+                                                <a href="{{ file.file.url }}" download class="btn btn-sm btn-outline-success flex-fill">
+                                                    <i class="fas fa-download me-1"></i> Download
+                                                </a>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -144,37 +153,37 @@
                         <h6 class="mb-0"><i class="fas fa-history me-2"></i>Appointment History with You</h6>
                     </div>
                     <div class="card-body">
-                        {% with history=Appointment.objects.filter(Patient=patient, Doctor=doctor).order_by('-date') %}
-                            {% if history %}
-                                <div class="list-group">
-                                    {% for apt in history %}
-                                    <div class="list-group-item list-group-item-action">
-                                        <div class="d-flex w-100 justify-content-between">
-                                            <h6 class="mb-1">
-                                                {{ apt.date|date:"M d, Y" }} at {{ apt.time }}
-                                            </h6>
-                                            <small>
-                                                <span class="badge {% if apt.date > today %}bg-success{% elif apt.date == today %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
-                                                    {% if apt.date > today %}Upcoming{% elif apt.date == today %}Today{% else %}Completed{% endif %}
-                                                </span>
-                                            </small>
-                                        </div>
-                                        <p class="mb-1 text-muted">Status: {{ apt.status|default:"Scheduled" }}</p>
+                        {% if patient.appointment_history %}
+                            <div class="list-group">
+                                {% for apt in patient.appointment_history %}
+                                <div class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between align-items-center">
+                                        <h6 class="mb-1">
+                                            {{ apt.date|date:"M d, Y" }} at {{ apt.time }}
+                                        </h6>
+                                        <small>
+                                            <span class="badge {% if apt.date > today %}bg-success{% elif apt.date == today %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                                                {% if apt.date > today %}Upcoming{% elif apt.date == today %}Today{% else %}Completed{% endif %}
+                                            </span>
+                                        </small>
                                     </div>
-                                    {% endfor %}
+                                    <p class="mb-1 text-muted">
+                                        Status: {{ apt.status|default:"Scheduled" }}
+                                    </p>
                                 </div>
-                            {% else %}
-                                <div class="text-center py-4">
-                                    <i class="fas fa-history fa-4x text-muted mb-3"></i>
-                                    <p class="lead text-muted">No appointment history with you yet.</p>
-                                </div>
-                            {% endif %}
-                        {% endwith %}
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-history fa-5x text-muted mb-4"></i>
+                                <p class="lead text-muted">No appointment history with you yet.</p>
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
 
-            <!-- Footer -->
+            <!-- Modal Footer -->
             <div class="modal-footer bg-light border-0">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
@@ -182,7 +191,7 @@
     </div>
 </div>
 
-<!-- JavaScript to Populate Basic Info (files/history are already loaded via template) -->
+<!-- JavaScript to Populate Basic Info -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const modal = document.getElementById('patientRecordsModal');
