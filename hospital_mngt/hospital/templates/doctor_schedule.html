@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% block title %}My Schedule – Doctor Portal{% endblock %}
+
+{% block content %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@500&display=swap');
+:root{--blue:#1a6ef5;--blue-l:#e8f0fe;--green:#0fa66a;--green-l:#e6f7f1;--amber:#d97706;--amber-l:#fff8e1;--red:#e53935;--red-l:#fdecea;--text:#111827;--mid:#4b5563;--light:#9ca3af;--border:#e5e7eb;--card:#fff;--page:#f9fafb;--r:14px;--sh:0 2px 12px rgba(0,0,0,.07);}
+*{box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--page);}
+</style>
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <a href="{% url 'doctor_dashboard' %}" class="text-muted text-decoration-none">← Dashboard</a>
+                <h2 class="fw-bold mb-0">My Weekly Schedule</h2>
+            </div>
+
+            {% if messages %}
+                {% for msg in messages %}
+                <div class="alert alert-{% if 'success' in msg.tags %}success{% else %}danger{% endif %}">{{ msg }}</div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Current schedule -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">📅 Current Availability</h5>
+                    {% if schedules %}
+                    <div class="row g-3">
+                        {% for s in schedules %}
+                        <div class="col-md-6">
+                            <div class="border rounded-3 p-3 {% if s.is_active %}border-success bg-light{% else %}border-secondary opacity-50{% endif %}">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <span class="badge bg-primary mb-2">{{ s.get_day_of_week_display }}</span>
+                                        <div class="fw-bold" style="font-family:'DM Mono',monospace;">
+                                            {{ s.start_time|time:"H:i" }} – {{ s.end_time|time:"H:i" }}
+                                        </div>
+                                        <div class="text-muted small mt-1">
+                                            {{ s.slot_duration_minutes }} min slots · max {{ s.max_patients }} patients
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <form method="POST" action="{% url 'toggle_schedule' s.id %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm {% if s.is_active %}btn-outline-warning{% else %}btn-outline-success{% endif %}">
+                                                {% if s.is_active %}Pause{% else %}Activate{% endif %}
+                                            </button>
+                                        </form>
+                                        <form method="POST" action="{% url 'delete_schedule' s.id %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                onclick="return confirm('Remove this schedule day?')">✕</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="fas fa-calendar-times fa-3x mb-3"></i>
+                        <p>No schedule set yet. Add your working days below.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Add schedule day -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">➕ Add Working Day</h5>
+                    <form method="POST" action="{% url 'add_schedule' %}">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">Day</label>
+                                <select name="day_of_week" class="form-select" required>
+                                    <option value="">— Select —</option>
+                                    {% for val, label in days %}
+                                    <option value="{{ val }}">{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label fw-semibold">Start</label>
+                                <input type="time" name="start_time" class="form-control" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label fw-semibold">End</label>
+                                <input type="time" name="end_time" class="form-control" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label fw-semibold">Slot (mins)</label>
+                                <select name="slot_duration_minutes" class="form-select">
+                                    <option value="10">10</option>
+                                    <option value="15">15</option>
+                                    <option value="20" selected>20</option>
+                                    <option value="30">30</option>
+                                    <option value="45">45</option>
+                                    <option value="60">60</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label fw-semibold">Max patients</label>
+                                <input type="number" name="max_patients" class="form-control" value="15" min="1" max="50">
+                            </div>
+                            <div class="col-md-1 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary w-100">Add</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Leave management -->
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">🚫 Mark Leave / Off Days</h5>
+
+                    {% if leaves %}
+                    <div class="mb-3">
+                        {% for leave in leaves %}
+                        <span class="badge bg-danger me-2 mb-2 p-2" style="font-size:13px;">
+                            {{ leave.date|date:"M d, Y" }}
+                            {% if leave.reason %} — {{ leave.reason }}{% endif %}
+                            <a href="{% url 'delete_leave' leave.id %}" class="text-white ms-2 text-decoration-none"
+                               onclick="return confirm('Remove this leave day?')">✕</a>
+                        </span>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted small mb-3">No leave days marked.</p>
+                    {% endif %}
+
+                    <form method="POST" action="{% url 'add_leave' %}" class="row g-3">
+                        {% csrf_token %}
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Date</label>
+                            <input type="date" name="date" class="form-control" min="{{ today }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Reason (optional)</label>
+                            <input type="text" name="reason" class="form-control" placeholder="Conference, holiday, emergency...">
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-danger w-100">Mark Off</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

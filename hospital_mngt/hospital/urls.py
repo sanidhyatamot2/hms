@@ -22,6 +22,8 @@ from .views import (
     # Doctor portal
     doctor_dashboard, doctor_appointments, doctor_my_patients,
     doctor_prescriptions, prescribe_medicine,
+    doctor_schedule, add_schedule, toggle_schedule, delete_schedule,
+    add_leave, delete_leave, get_slots,
 
     # Patient portal
     patient_dashboard, patient_book_appointment,
@@ -30,7 +32,7 @@ from .views import (
 
     # Staff portal
     staff_dashboard, add_bill, record_payment,
-    staff_register_patient, staff_report,
+    staff_register_patient, staff_report, staff_book_appointment,
 )
 
 urlpatterns = [
@@ -81,6 +83,15 @@ urlpatterns = [
     path('doctor-my-patients/',                doctor_my_patients,  name='doctor_my_patients'),
     path('doctor-prescriptions/',              doctor_prescriptions,name='doctor_prescriptions'),
     path('doctor/prescribe/<int:patient_id>/', prescribe_medicine,  name='prescribe_medicine'),
+    path('doctor/schedule/',                   doctor_schedule,     name='doctor_schedule'),
+    path('doctor/schedule/add/',               add_schedule,        name='add_schedule'),
+    path('doctor/schedule/<int:pk>/toggle/',   toggle_schedule,     name='toggle_schedule'),
+    path('doctor/schedule/<int:pk>/delete/',   delete_schedule,     name='delete_schedule'),
+    path('doctor/leave/add/',                  add_leave,           name='add_leave'),
+    path('doctor/leave/<int:pk>/delete/',      delete_leave,        name='delete_leave'),
+
+    # ── Slots API ─────────────────────────────────────────────────
+    path('api/slots/',                         get_slots,           name='get_slots'),
 
     # ── Patient portal ────────────────────────────────────────────
     path('patient-dashboard/',              patient_dashboard,       name='patient_dashboard'),
@@ -96,6 +107,7 @@ urlpatterns = [
     path('staff/record-payment/',     record_payment,         name='record_payment'),
     path('staff/register-patient/',   staff_register_patient, name='staff_register_patient'),
     path('staff/report/',             staff_report,           name='staff_report'),
+    path('staff/book-appointment/',   staff_book_appointment, name='staff_book_appointment'),
 
 ]
 

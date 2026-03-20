@@ -5,6 +5,7 @@ from django.contrib import messages
 from .models import (
     Doctor, Patient, Appointment, Prescription, PrescriptionItem,
     Staff, BillingItem, Bill, BillItem, MedicalFile,
+    DoctorSchedule, AppointmentSlot, DoctorLeave,
 )
 from datetime import date
 from datetime import date as dt_date
@@ -303,9 +304,12 @@ def Add_Doctor(request):
 
 
 def Delete_Doctor(request, pid):
-    if not request.user.is_authenticated or not request.user.is_staff:
+    is_admin = request.user.is_authenticated and request.user.is_staff
+    is_staff_user = _require_staff(request) is not None
+    if not is_admin and not is_staff_user:
         return redirect('main_login')
     Doctor.objects.filter(id=pid).delete()
+    messages.success(request, 'Doctor deleted.')
     return redirect('view_doctor')
 
 
@@ -335,9 +339,12 @@ def Add_Patient(request):
 
 
 def Delete_Patient(request, pid):
-    if not request.user.is_authenticated or not request.user.is_staff:
+    is_admin = request.user.is_authenticated and request.user.is_staff
+    is_staff_user = _require_staff(request) is not None
+    if not is_admin and not is_staff_user:
         return redirect('main_login')
     Patient.objects.filter(id=pid).delete()
+    messages.success(request, 'Patient deleted.')
     return redirect('view_patient')
 
 
@@ -372,9 +379,13 @@ def Add_Appointment(request):
 
 
 def Delete_Appointment(request, pid):
-    if not request.user.is_authenticated or not request.user.is_staff:
+    # Allow both Django admin users AND staff session users
+    is_admin = request.user.is_authenticated and request.user.is_staff
+    is_staff_user = _require_staff(request) is not None
+    if not is_admin and not is_staff_user:
         return redirect('main_login')
     Appointment.objects.filter(id=pid).delete()
+    messages.success(request, 'Appointment deleted.')
     return redirect('view_appointment')
 
 
@@ -554,23 +565,63 @@ def patient_book_appointment(request):
     if not patient:
         return redirect('main_login')
 
-    doctors = Doctor.objects.all()
-
     if request.method == "POST":
         doctor_id = request.POST.get('doctor')
+        slot_id   = request.POST.get('slot_id')
         date_str  = request.POST.get('date')
         time_str  = request.POST.get('time')
+
         try:
             doctor = get_object_or_404(Doctor, id=doctor_id)
-            Appointment.objects.create(Doctor=doctor, Patient=patient, date=date_str, time=time_str)
-            messages.success(request, "Appointment booked successfully!")
-            return redirect('patient_dashboard')
+
+            # Slot-based booking
+            if slot_id:
+                slot = get_object_or_404(AppointmentSlot, id=slot_id, doctor=doctor)
+                if not slot.is_available:
+                    messages.error(request, 'This slot was just taken. Please choose another.')
+                    return redirect('patient_book_appointment')
+
+                # Check patient does not have another appointment same day with same doctor
+                if Appointment.objects.filter(Doctor=doctor, Patient=patient, date=slot.date).exists():
+                    messages.error(request, 'You already have an appointment with this doctor on that day.')
+                    return redirect('patient_book_appointment')
+
+                appt = Appointment.objects.create(
+                    Doctor=doctor, Patient=patient,
+                    date=slot.date, time=slot.start_time, slot=slot
+                )
+                slot.status = 'booked'
+                slot.save()
+                messages.success(request, f'Appointment confirmed with Dr. {doctor.Name} on {slot.date} at {slot.start_time.strftime("%H:%M")}.')
+            else:
+                # Fallback: no slot system yet for this doctor
+                Appointment.objects.create(Doctor=doctor, Patient=patient, date=date_str, time=time_str)
+                messages.success(request, "Appointment booked successfully.")
+
+            return redirect('patient_appointments')
+
         except Exception as e:
             messages.error(request, f"Could not book appointment: {e}")
 
+    # Build availability JSON for JS
+    import json
+    doctors = Doctor.objects.all()
+    availability = {}
+    for doc in doctors:
+        schedules = DoctorSchedule.objects.filter(doctor=doc, is_active=True)
+        leaves    = DoctorLeave.objects.filter(doctor=doc, date__gte=dt_date.today())
+        availability[doc.id] = {
+            'schedule_days': list(schedules.values_list('day_of_week', flat=True)),
+            'leaves':        [str(l.date) for l in leaves],
+        }
+        # Annotate schedule summary for display
+        day_names = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
+        doc.schedule_days = ', '.join(day_names[d] for d in availability[doc.id]['schedule_days']) if availability[doc.id]['schedule_days'] else ''
+
     return render(request, 'patient_book_appointment.html', {
-        'doctors': doctors,
-        'today':   dt_date.today(),
+        'doctors':          doctors,
+        'today':            dt_date.today(),
+        'availability_json': json.dumps(availability),
     })
 
 
@@ -624,11 +675,13 @@ def staff_dashboard(request):
         'staff':                    staff,
         'today':                    today,
         'today_appointments_count': Appointment.objects.filter(date=today).count(),
+        'total_appointments':       Appointment.objects.count(),
         'recent_bills':             recent_bills,
         'total_pending':            total_pending,
         'message':                  'Welcome to the Staff Dashboard!',
         'doctor_count':             Doctor.objects.count(),
         'staff_count':              Staff.objects.count(),
+        'total_patients':           Patient.objects.count(),
         'all_doctors':              Doctor.objects.all().order_by('Name'),
         'all_staff_members':        Staff.objects.all().order_by('name'),
     })
@@ -673,38 +726,35 @@ def add_bill(request):
 # ===================== STAFF — UPDATED VIEWS =====================
 
 def View_Appointment(request):
-    """Staff-styled appointment page with booking form."""
+    """Staff-styled appointment page with availability-aware booking form."""
     if not request.user.is_authenticated or not request.user.is_staff:
-        # Also allow staff session users
         if _require_staff(request) is None:
             return redirect('main_login')
 
+    import json
     from datetime import date as dt
     appointments = Appointment.objects.select_related('Doctor', 'Patient').order_by('-date', '-time')
     doctors      = Doctor.objects.all()
     patients     = Patient.objects.all()
     today        = dt.today()
 
-    if request.method == 'POST':
-        doctor_name  = request.POST.get('doctor')
-        patient_name = request.POST.get('patient')
-        date_val     = request.POST.get('date')
-        time_val     = request.POST.get('time')
-        try:
-            doctor_obj  = Doctor.objects.get(Name=doctor_name)
-            patient_obj = Patient.objects.get(Name=patient_name)
-            Appointment.objects.create(Doctor=doctor_obj, Patient=patient_obj, date=date_val, time=time_val)
-            messages.success(request, 'Appointment booked successfully.')
-        except Exception as e:
-            messages.error(request, f'Error: {e}')
-        return redirect('view_appointment')
+    # Build availability JSON for the calendar JS
+    availability = {}
+    for doc in doctors:
+        schedules = DoctorSchedule.objects.filter(doctor=doc, is_active=True)
+        leaves    = DoctorLeave.objects.filter(doctor=doc, date__gte=today)
+        availability[doc.id] = {
+            'schedule_days': list(schedules.values_list('day_of_week', flat=True)),
+            'leaves':        [str(l.date) for l in leaves],
+        }
 
     return render(request, 'view_appointment.html', {
-        'appointments': appointments,
-        'doctors':      doctors,
-        'patients':     patients,
-        'today':        today,
-        'doc':          appointments,  # keep old variable for backward compat
+        'appointments':    appointments,
+        'doctors':         doctors,
+        'patients':        patients,
+        'today':           today,
+        'doc':             appointments,
+        'availability_json': json.dumps(availability),
     })
 
 
@@ -1000,3 +1050,219 @@ def staff_report(request):
         'patients_with_files': patients_with_files,
         'latest_upload':       latest_upload,
     })
+
+
+# ===================== AVAILABILITY SYSTEM VIEWS =====================
+
+def get_slots(request):
+    """AJAX — returns available slots for a doctor on a date as JSON."""
+    from django.http import JsonResponse
+    from datetime import datetime
+
+    doctor_id = request.GET.get('doctor')
+    date_str  = request.GET.get('date')
+
+    if not doctor_id or not date_str:
+        return JsonResponse({'slots': []})
+
+    try:
+        from datetime import date as dt
+        doctor      = get_object_or_404(Doctor, id=doctor_id)
+        target_date = dt.fromisoformat(date_str)
+
+        # Check leave
+        if DoctorLeave.objects.filter(doctor=doctor, date=target_date).exists():
+            return JsonResponse({'slots': [], 'message': 'Doctor is on leave this day.'})
+
+        # Generate slots from schedule if not already generated
+        dow      = target_date.weekday()  # Mon=0
+        schedule = DoctorSchedule.objects.filter(doctor=doctor, day_of_week=dow, is_active=True).first()
+        if schedule:
+            schedule.generate_slots_for_date(target_date)
+
+        # Return all slots for this date
+        slots = AppointmentSlot.objects.filter(doctor=doctor, date=target_date).order_by('start_time')
+        return JsonResponse({
+            'slots': [
+                {
+                    'id':       s.id,
+                    'start':    s.start_time.strftime('%H:%M'),
+                    'end':      s.end_time.strftime('%H:%M'),
+                    'status':   s.status,
+                    'duration': schedule.slot_duration_minutes if schedule else 20,
+                }
+                for s in slots
+            ]
+        })
+    except Exception as e:
+        return JsonResponse({'slots': [], 'error': str(e)})
+
+
+# ── Doctor schedule management ────────────────────────
+
+def doctor_schedule(request):
+    """Doctor views and manages their weekly schedule."""
+    doctor = _require_doctor(request)
+    if not doctor:
+        return redirect('main_login')
+
+    schedules = DoctorSchedule.objects.filter(doctor=doctor).order_by('day_of_week')
+    leaves    = DoctorLeave.objects.filter(doctor=doctor, date__gte=dt_date.today()).order_by('date')
+
+    from .models import DAYS
+    return render(request, 'doctor_schedule.html', {
+        'doctor':    doctor,
+        'schedules': schedules,
+        'leaves':    leaves,
+        'days':      DAYS,
+        'today':     str(dt_date.today()),
+    })
+
+
+def add_schedule(request):
+    """Doctor adds a working day to their schedule."""
+    doctor = _require_doctor(request)
+    if not doctor:
+        return redirect('main_login')
+
+    if request.method == 'POST':
+        day      = request.POST.get('day_of_week')
+        start    = request.POST.get('start_time')
+        end      = request.POST.get('end_time')
+        duration = int(request.POST.get('slot_duration_minutes', 20))
+        max_p    = int(request.POST.get('max_patients', 15))
+
+        if start >= end:
+            messages.error(request, 'End time must be after start time.')
+            return redirect('doctor_schedule')
+
+        obj, created = DoctorSchedule.objects.update_or_create(
+            doctor=doctor, day_of_week=int(day),
+            defaults={
+                'start_time':            start,
+                'end_time':              end,
+                'slot_duration_minutes': duration,
+                'max_patients':          max_p,
+                'is_active':             True,
+            }
+        )
+        messages.success(request, f'Schedule {"added" if created else "updated"} successfully.')
+
+    return redirect('doctor_schedule')
+
+
+def toggle_schedule(request, pk):
+    """Pause or activate a schedule day."""
+    doctor = _require_doctor(request)
+    if not doctor:
+        return redirect('main_login')
+
+    if request.method == 'POST':
+        sched = get_object_or_404(DoctorSchedule, pk=pk, doctor=doctor)
+        sched.is_active = not sched.is_active
+        sched.save()
+        messages.success(request, f'Schedule {"activated" if sched.is_active else "paused"}.')
+
+    return redirect('doctor_schedule')
+
+
+def delete_schedule(request, pk):
+    """Remove a schedule day entirely."""
+    doctor = _require_doctor(request)
+    if not doctor:
+        return redirect('main_login')
+
+    if request.method == 'POST':
+        get_object_or_404(DoctorSchedule, pk=pk, doctor=doctor).delete()
+        messages.success(request, 'Schedule day removed.')
+
+    return redirect('doctor_schedule')
+
+
+def add_leave(request):
+    """Doctor marks a day as leave/off."""
+    doctor = _require_doctor(request)
+    if not doctor:
+        return redirect('main_login')
+
+    if request.method == 'POST':
+        date_str = request.POST.get('date')
+        reason   = request.POST.get('reason', '')
+        try:
+            from datetime import date as dt
+            leave_date = dt.fromisoformat(date_str)
+            DoctorLeave.objects.get_or_create(
+                doctor=doctor, date=leave_date,
+                defaults={'reason': reason}
+            )
+            # Block all existing available slots on this date
+            AppointmentSlot.objects.filter(
+                doctor=doctor, date=leave_date, status='available'
+            ).update(status='blocked')
+            messages.success(request, f'{leave_date.strftime("%b %d, %Y")} marked as leave.')
+        except Exception as e:
+            messages.error(request, f'Error: {e}')
+
+    return redirect('doctor_schedule')
+
+
+def delete_leave(request, pk):
+    """Remove a leave day so slots become available again."""
+    doctor = _require_doctor(request)
+    if not doctor:
+        return redirect('main_login')
+
+    leave = get_object_or_404(DoctorLeave, pk=pk, doctor=doctor)
+    # Unblock slots on that date
+    AppointmentSlot.objects.filter(
+        doctor=doctor, date=leave.date, status='blocked'
+    ).update(status='available')
+    leave.delete()
+    messages.success(request, 'Leave day removed.')
+    return redirect('doctor_schedule')
+
+
+# ===================== STAFF BOOK APPOINTMENT (slot-based) =====================
+
+def staff_book_appointment(request):
+    """Staff books an appointment for an offline patient using the slot system."""
+    if not request.user.is_authenticated or not request.user.is_staff:
+        if _require_staff(request) is None:
+            return redirect('main_login')
+
+    if request.method == 'POST':
+        doctor_id  = request.POST.get('doctor_id')
+        patient_nm = request.POST.get('patient')
+        slot_id    = request.POST.get('slot_id')
+        date_val   = request.POST.get('date')
+        time_val   = request.POST.get('time')
+
+        try:
+            doctor  = get_object_or_404(Doctor, id=doctor_id)
+            patient = get_object_or_404(Patient, Name=patient_nm)
+
+            if slot_id:
+                # Slot-based booking
+                slot = get_object_or_404(AppointmentSlot, id=slot_id, doctor=doctor)
+                if not slot.is_available:
+                    messages.error(request, 'That slot was just taken. Please choose another.')
+                    return redirect('view_appointment')
+                Appointment.objects.create(
+                    Doctor=doctor, Patient=patient,
+                    date=slot.date, time=slot.start_time, slot=slot
+                )
+                slot.status = 'booked'
+                slot.save()
+                messages.success(request, f'Appointment booked for {patient.Name} with Dr. {doctor.Name} on {slot.date} at {slot.start_time.strftime("%H:%M")}.')
+            else:
+                # Manual fallback (no schedule set)
+                Appointment.objects.create(
+                    Doctor=doctor, Patient=patient,
+                    date=date_val, time=time_val
+                )
+                messages.success(request, f'Appointment booked for {patient.Name} with Dr. {doctor.Name}.')
+
+        except Exception as e:
+            messages.error(request, f'Booking error: {e}')
+
+    return redirect('view_appointment')

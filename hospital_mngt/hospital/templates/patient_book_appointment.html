@@ -1,31 +1,387 @@
 {% extends "base.html" %}
-
 {% block title %}Book Appointment{% endblock %}
 
 {% block content %}
-<div class="container my-5">
-    <div class="card shadow-lg p-5" style="max-width: 600px; margin: auto; border-radius: 20px;">
-        <h2 class="text-center mb-4 fw-bold">Book New Appointment</h2>
-        <form method="post">
-            {% csrf_token %}
-            <div class="mb-3">
-                <label class="form-label fw-bold">Select Doctor</label>
-                <select name="doctor" class="form-select form-select-lg" required>
-                    {% for doctor in doctors %}
-                    <option value="{{ doctor.id }}">{{ doctor.Name }} ({{ doctor.Special }})</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="mb-3">
-                <label class="form-label fw-bold">Date</label>
-                <input type="date" name="date" class="form-control form-control-lg" min="{{ today }}" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label fw-bold">Time</label>
-                <input type="time" name="time" class="form-control form-control-lg" required>
-            </div>
-            <button type="submit" class="btn btn-primary w-100 py-3 fw-bold">Book Appointment</button>
-        </form>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@500&display=swap');
+:root{--blue:#1a6ef5;--blue-l:#e8f0fe;--green:#0fa66a;--green-l:#e6f7f1;--amber:#d97706;--amber-l:#fff8e1;--red:#e53935;--red-l:#fdecea;--text:#111827;--mid:#4b5563;--light:#9ca3af;--border:#e5e7eb;--card:#fff;--page:#f9fafb;--r:14px;--sh:0 2px 12px rgba(0,0,0,.07);}
+*{box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--page);}
+
+.wrap{max-width:760px;margin:0 auto;padding:40px 20px 60px;}
+h1{font-size:24px;font-weight:700;color:var(--text);margin:0 0 4px;}
+.sub{font-size:14px;color:var(--light);margin:0 0 28px;}
+
+/* steps */
+.steps{display:flex;align-items:center;gap:0;margin-bottom:32px;}
+.step{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--light);}
+.step.done{color:var(--green);}
+.step.active{color:var(--blue);}
+.step-dot{width:28px;height:28px;border-radius:50%;border:2px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+.step.done .step-dot{background:var(--green);border-color:var(--green);color:#fff;}
+.step.active .step-dot{background:var(--blue);border-color:var(--blue);color:#fff;}
+.step-line{flex:1;height:2px;background:var(--border);margin:0 8px;}
+.step-line.done{background:var(--green);}
+
+/* cards */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);padding:24px;margin-bottom:20px;}
+.card h3{font-size:15px;font-weight:700;color:var(--text);margin:0 0 16px;display:flex;align-items:center;gap:8px;}
+
+/* doctor select */
+.doctor-option{border:2px solid var(--border);border-radius:12px;padding:14px 16px;cursor:pointer;margin-bottom:10px;display:flex;align-items:center;gap:14px;transition:all .15s;}
+.doctor-option:hover{border-color:var(--blue);background:var(--blue-l);}
+.doctor-option.selected{border-color:var(--blue);background:var(--blue-l);}
+.doc-avatar{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#1a6ef5,#0891b2);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;flex-shrink:0;}
+.doc-name{font-size:15px;font-weight:700;color:var(--text);}
+.doc-spec{font-size:12px;color:var(--light);}
+.doc-avail{font-size:12px;color:var(--green);font-weight:600;margin-top:2px;}
+.doc-noavail{font-size:12px;color:var(--amber);font-weight:600;margin-top:2px;}
+
+/* day picker */
+.day-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:4px;}
+.day-btn{border:2px solid var(--border);border-radius:10px;padding:10px 4px;text-align:center;cursor:pointer;transition:all .15s;background:var(--card);}
+.day-btn:hover:not(.disabled){border-color:var(--blue);background:var(--blue-l);}
+.day-btn.selected{border-color:var(--blue);background:var(--blue);color:#fff;}
+.day-btn.disabled{opacity:.35;cursor:not-allowed;background:#f3f4f6;}
+.day-btn .day-name{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;}
+.day-btn .day-num{font-size:18px;font-weight:700;font-family:'DM Mono',monospace;}
+.day-btn .day-month{font-size:10px;color:inherit;opacity:.7;}
+.week-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.week-nav span{font-size:14px;font-weight:600;color:var(--text);}
+.week-btn{background:none;border:1.5px solid var(--border);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:14px;transition:all .15s;}
+.week-btn:hover{border-color:var(--blue);color:var(--blue);}
+
+/* slot grid */
+.slot-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.slot-btn{border:2px solid var(--border);border-radius:10px;padding:10px;text-align:center;cursor:pointer;transition:all .15s;background:var(--card);}
+.slot-btn:hover:not(.booked){border-color:var(--blue);background:var(--blue-l);}
+.slot-btn.selected{border-color:var(--blue);background:var(--blue);color:#fff;}
+.slot-btn.booked{background:#f3f4f6;cursor:not-allowed;opacity:.5;}
+.slot-time{font-size:14px;font-weight:700;font-family:'DM Mono',monospace;}
+.slot-dur{font-size:11px;color:inherit;opacity:.7;margin-top:2px;}
+.slot-tag{font-size:10px;font-weight:700;text-transform:uppercase;margin-top:3px;}
+.slot-tag.free{color:var(--green);}
+.slot-tag.taken{color:var(--red);}
+
+/* summary */
+.summary-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f3f4f6;font-size:14px;}
+.summary-row:last-child{border-bottom:none;}
+.summary-row .lbl{color:var(--mid);}
+.summary-row .val{font-weight:600;color:var(--text);}
+
+/* confirm btn */
+.btn-confirm{width:100%;background:var(--blue);color:#fff;border:none;border-radius:10px;padding:14px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:8px;transition:opacity .15s;}
+.btn-confirm:hover{opacity:.88;}
+.btn-confirm:disabled{opacity:.4;cursor:not-allowed;}
+.btn-back{background:none;border:1.5px solid var(--border);border-radius:10px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--mid);margin-top:8px;}
+.btn-back:hover{border-color:var(--blue);color:var(--blue);}
+
+/* info box */
+.info-box{background:var(--blue-l);border:1px solid #bfdbfe;border-radius:9px;padding:12px 16px;font-size:13px;color:#1e40af;margin-bottom:16px;}
+.warn-box{background:var(--amber-l);border:1px solid #fde68a;border-radius:9px;padding:12px 16px;font-size:13px;color:#92400e;margin-bottom:16px;}
+.empty-slots{text-align:center;color:var(--light);padding:32px;font-size:14px;}
+
+/* alert */
+.alert{padding:12px 16px;border-radius:9px;font-size:13.5px;margin-bottom:18px;}
+.alert-error{background:var(--red-l);color:#991b1b;border:1px solid #fca5a5;}
+.alert-success{background:var(--green-l);color:#065f46;border:1px solid #6ee7b7;}
+
+.hidden{display:none;}
+
+@media(max-width:600px){.slot-grid{grid-template-columns:repeat(3,1fr);}.day-grid{grid-template-columns:repeat(4,1fr);}}
+</style>
+
+<div class="wrap">
+    <a href="{% url 'patient_dashboard' %}" style="color:var(--mid);font-size:13px;text-decoration:none;display:inline-flex;align-items:center;gap:5px;margin-bottom:20px;">← Back to Dashboard</a>
+    <h1>Book an Appointment</h1>
+    <p class="sub">Select a doctor, choose an available date, then pick a time slot.</p>
+
+    {% if messages %}
+        {% for msg in messages %}
+        <div class="alert {% if 'success' in msg.tags %}alert-success{% else %}alert-error{% endif %}">{{ msg }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Progress steps -->
+    <div class="steps">
+        <div class="step active" id="s1"><div class="step-dot">1</div>Doctor</div>
+        <div class="step-line" id="l1"></div>
+        <div class="step" id="s2"><div class="step-dot">2</div>Date</div>
+        <div class="step-line" id="l2"></div>
+        <div class="step" id="s3"><div class="step-dot">3</div>Time Slot</div>
+        <div class="step-line" id="l3"></div>
+        <div class="step" id="s4"><div class="step-dot">4</div>Confirm</div>
     </div>
+
+    <form method="POST" action="{% url 'patient_book_appointment' %}" id="bookForm">
+        {% csrf_token %}
+        <input type="hidden" name="doctor"   id="hidDoctor">
+        <input type="hidden" name="slot_id"  id="hidSlot">
+        <input type="hidden" name="date"     id="hidDate">
+        <input type="hidden" name="time"     id="hidTime">
+
+        <!-- ── STEP 1: Choose Doctor ── -->
+        <div class="card" id="step1">
+            <h3>🩺 Step 1 — Select a Doctor</h3>
+            {% for doc in doctors %}
+            <div class="doctor-option" id="doc-{{ doc.id }}"
+                 onclick="selectDoctor({{ doc.id }}, '{{ doc.Name }}', '{{ doc.Special }}')">
+                <div class="doc-avatar">{{ doc.Name|first|upper }}</div>
+                <div style="flex:1;">
+                    <div class="doc-name">Dr. {{ doc.Name }}</div>
+                    <div class="doc-spec">{{ doc.Special }}</div>
+                    {% if doc.schedule_days %}
+                    <div class="doc-avail">✓ Available: {{ doc.schedule_days }}</div>
+                    {% else %}
+                    <div class="doc-noavail">⚠ No schedule set yet — contact reception</div>
+                    {% endif %}
+                </div>
+                <div style="font-size:20px;color:var(--border);" id="check-{{ doc.id }}">○</div>
+            </div>
+            {% empty %}
+            <div class="empty-slots">No doctors available.</div>
+            {% endfor %}
+        </div>
+
+        <!-- ── STEP 2: Choose Date ── -->
+        <div class="card hidden" id="step2">
+            <h3>📅 Step 2 — Choose a Date</h3>
+            <div class="info-box" id="dateInfo">Select a date when your doctor is available.</div>
+            <div class="week-nav">
+                <button type="button" class="week-btn" onclick="changeWeek(-1)">← Prev</button>
+                <span id="weekLabel"></span>
+                <button type="button" class="week-btn" onclick="changeWeek(1)">Next →</button>
+            </div>
+            <div class="day-grid" id="dayGrid"></div>
+            <button type="button" class="btn-back" onclick="goStep(1)">← Change Doctor</button>
+        </div>
+
+        <!-- ── STEP 3: Choose Time Slot ── -->
+        <div class="card hidden" id="step3">
+            <h3>🕐 Step 3 — Pick a Time Slot</h3>
+            <div class="info-box" id="slotInfo"></div>
+            <div class="slot-grid" id="slotGrid"></div>
+            <div class="empty-slots hidden" id="noSlots">No available slots for this date.</div>
+            <button type="button" class="btn-back" onclick="goStep(2)" style="margin-top:14px;">← Change Date</button>
+        </div>
+
+        <!-- ── STEP 4: Confirm ── -->
+        <div class="card hidden" id="step4">
+            <h3>✅ Step 4 — Confirm Booking</h3>
+            <div class="summary-row"><span class="lbl">Doctor</span><span class="val" id="confDoctor">—</span></div>
+            <div class="summary-row"><span class="lbl">Specialization</span><span class="val" id="confSpec">—</span></div>
+            <div class="summary-row"><span class="lbl">Date</span><span class="val" id="confDate">—</span></div>
+            <div class="summary-row"><span class="lbl">Time</span><span class="val" id="confTime">—</span></div>
+            <div class="summary-row"><span class="lbl">Duration</span><span class="val" id="confDur">—</span></div>
+            <button type="submit" class="btn-confirm">Confirm Appointment</button>
+            <button type="button" class="btn-back" onclick="goStep(3)">← Change Slot</button>
+        </div>
+
+    </form>
 </div>
+
+<!-- Availability data injected from Django -->
+<script>
+// Data passed from Django view
+const AVAILABILITY = {{ availability_json|safe }};
+// { doctor_id: { schedule_days: [0,2,4], leaves: ["2026-03-25"] } }
+
+const SLOTS_URL = "{% url 'get_slots' %}";
+
+// State
+let currentDoctor = null, currentDoctorName = '', currentSpec = '';
+let currentDate   = null;
+let currentSlot   = null;
+let weekOffset    = 0;
+
+const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DAY_NAMES   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+// ── Doctor selection ──────────────────────────────────
+function selectDoctor(id, name, spec) {
+    document.querySelectorAll('.doctor-option').forEach(el => {
+        el.classList.remove('selected');
+    });
+    document.querySelectorAll('[id^="check-"]').forEach(el => el.textContent = '○');
+
+    document.getElementById('doc-' + id).classList.add('selected');
+    document.getElementById('check-' + id).textContent = '●';
+
+    currentDoctor     = id;
+    currentDoctorName = name;
+    currentSpec       = spec;
+    document.getElementById('hidDoctor').value = id;
+
+    weekOffset = 0;
+    goStep(2);
+    renderWeek();
+}
+
+// ── Week navigation ───────────────────────────────────
+function changeWeek(dir) {
+    weekOffset += dir;
+    if (weekOffset < 0) weekOffset = 0;
+    renderWeek();
+}
+
+function getWeekDates() {
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const start = new Date(today);
+    start.setDate(today.getDate() + weekOffset * 7);
+    const dates = [];
+    for (let i = 0; i < 7; i++) {
+        const d = new Date(start);
+        d.setDate(start.getDate() + i);
+        dates.push(d);
+    }
+    return dates;
+}
+
+function toYMD(d) {
+    return d.getFullYear() + '-' +
+           String(d.getMonth()+1).padStart(2,'0') + '-' +
+           String(d.getDate()).padStart(2,'0');
+}
+
+function renderWeek() {
+    const dates    = getWeekDates();
+    const avail    = AVAILABILITY[currentDoctor] || {};
+    const sched    = avail.schedule_days || [];
+    const leaves   = avail.leaves || [];
+    const today    = new Date(); today.setHours(0,0,0,0);
+    const grid     = document.getElementById('dayGrid');
+    const label    = document.getElementById('weekLabel');
+
+    label.textContent = `${MONTH_NAMES[dates[0].getMonth()]} ${dates[0].getDate()} – ${MONTH_NAMES[dates[6].getMonth()]} ${dates[6].getDate()}, ${dates[6].getFullYear()}`;
+
+    grid.innerHTML = '';
+    dates.forEach(d => {
+        const ymd       = toYMD(d);
+        const dow       = d.getDay() === 0 ? 6 : d.getDay() - 1; // Mon=0
+        const isPast    = d < today;
+        const isLeave   = leaves.includes(ymd);
+        const isWorking = sched.includes(dow);
+        const disabled  = isPast || isLeave || !isWorking;
+
+        const btn = document.createElement('div');
+        btn.className = 'day-btn' + (disabled ? ' disabled' : '') + (currentDate === ymd ? ' selected' : '');
+        btn.innerHTML = `
+            <div class="day-name">${DAY_NAMES[d.getDay()]}</div>
+            <div class="day-num">${d.getDate()}</div>
+            <div class="day-month">${MONTH_NAMES[d.getMonth()]}</div>
+        `;
+        if (!disabled) {
+            btn.onclick = () => selectDate(ymd, d);
+        }
+        grid.appendChild(btn);
+    });
+
+    // Update info box
+    const info = document.getElementById('dateInfo');
+    if (sched.length === 0) {
+        info.textContent = '⚠ This doctor has no schedule set. Please contact reception.';
+        info.style.background = 'var(--amber-l)';
+        info.style.color = '#92400e';
+        info.style.borderColor = '#fde68a';
+    } else {
+        const dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+        const workDays = sched.map(d => dayNames[d]).join(', ');
+        info.textContent = `✓ Dr. ${currentDoctorName} is available on: ${workDays}. Grey dates are unavailable.`;
+        info.style.background = 'var(--blue-l)';
+        info.style.color = '#1e40af';
+        info.style.borderColor = '#bfdbfe';
+    }
+}
+
+// ── Date selection ────────────────────────────────────
+function selectDate(ymd, dateObj) {
+    currentDate = ymd;
+    document.getElementById('hidDate').value = ymd;
+    document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('selected'));
+    event.currentTarget.classList.add('selected');
+    loadSlots(ymd, dateObj);
+}
+
+function loadSlots(ymd, dateObj) {
+    const grid    = document.getElementById('slotGrid');
+    const noSlots = document.getElementById('noSlots');
+    const info    = document.getElementById('slotInfo');
+
+    grid.innerHTML = '<div style="color:var(--light);padding:24px;text-align:center;font-size:13px;">Loading slots...</div>';
+    noSlots.classList.add('hidden');
+    goStep(3);
+
+    const mn = MONTH_NAMES[dateObj.getMonth()];
+    info.textContent = `Available slots for Dr. ${currentDoctorName} on ${mn} ${dateObj.getDate()}, ${dateObj.getFullYear()}`;
+
+    fetch(`${SLOTS_URL}?doctor=${currentDoctor}&date=${ymd}`)
+        .then(r => r.json())
+        .then(data => {
+            grid.innerHTML = '';
+            if (!data.slots || data.slots.length === 0) {
+                noSlots.classList.remove('hidden');
+                return;
+            }
+            data.slots.forEach(slot => {
+                const btn = document.createElement('div');
+                btn.className = 'slot-btn' + (slot.status !== 'available' ? ' booked' : '');
+                btn.innerHTML = `
+                    <div class="slot-time">${slot.start}</div>
+                    <div class="slot-dur">${slot.start} – ${slot.end}</div>
+                    <div class="slot-tag ${slot.status === 'available' ? 'free' : 'taken'}">
+                        ${slot.status === 'available' ? 'Free' : 'Taken'}
+                    </div>
+                `;
+                if (slot.status === 'available') {
+                    btn.onclick = () => selectSlot(btn, slot);
+                }
+                grid.appendChild(btn);
+            });
+        })
+        .catch(() => {
+            grid.innerHTML = '';
+            noSlots.classList.remove('hidden');
+        });
+}
+
+// ── Slot selection ────────────────────────────────────
+function selectSlot(el, slot) {
+    document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+    currentSlot = slot;
+    document.getElementById('hidSlot').value = slot.id;
+    document.getElementById('hidTime').value = slot.start;
+
+    // Fill confirm step
+    document.getElementById('confDoctor').textContent = 'Dr. ' + currentDoctorName;
+    document.getElementById('confSpec').textContent   = currentSpec;
+    document.getElementById('confDate').textContent   = formatDate(currentDate);
+    document.getElementById('confTime').textContent   = slot.start + ' – ' + slot.end;
+    document.getElementById('confDur').textContent    = slot.duration + ' minutes';
+
+    goStep(4);
+}
+
+// ── Step navigation ───────────────────────────────────
+function goStep(n) {
+    [1,2,3,4].forEach(i => {
+        document.getElementById('step'+i).classList.toggle('hidden', i !== n);
+        const s = document.getElementById('s'+i);
+        s.classList.remove('active','done');
+        if (i < n) s.classList.add('done');
+        if (i === n) s.classList.add('active');
+        if (i < 4) {
+            const l = document.getElementById('l'+i);
+            if (l) l.classList.toggle('done', i < n);
+        }
+    });
+}
+
+// ── Helpers ───────────────────────────────────────────
+function formatDate(ymd) {
+    const [y,m,d] = ymd.split('-');
+    return `${MONTH_NAMES[parseInt(m)-1]} ${parseInt(d)}, ${y}`;
+}
+</script>
 {% endblock %}

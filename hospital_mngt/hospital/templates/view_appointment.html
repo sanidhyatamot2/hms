@@ -7,8 +7,6 @@
 :root{--blue:#1a6ef5;--blue-l:#e8f0fe;--green:#0fa66a;--green-l:#e6f7f1;--amber:#d97706;--amber-l:#fff8e1;--red:#e53935;--red-l:#fdecea;--sidebar-bg:#f4f6fb;--sidebar-w:255px;--text:#111827;--mid:#4b5563;--light:#9ca3af;--border:#e5e7eb;--card:#fff;--page:#f9fafb;--r:14px;--sh:0 2px 12px rgba(0,0,0,.07);--sh-md:0 6px 24px rgba(0,0,0,.11);}
 .sw*{box-sizing:border-box;}
 .sw{font-family:'DM Sans',sans-serif;display:flex;min-height:100vh;background:var(--page);margin:0;padding:0!important;}
-
-/* sidebar */
 .sw-side{width:var(--sidebar-w);background:var(--sidebar-bg);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:28px 14px;position:fixed;top:0;left:0;bottom:0;z-index:200;}
 .sw-brand{display:flex;align-items:center;gap:10px;padding:0 8px 24px;border-bottom:1px solid var(--border);margin-bottom:18px;color:var(--blue);font-weight:700;font-size:17px;text-decoration:none;}
 .sw-nav{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:10px;text-decoration:none;color:var(--mid);font-size:14px;font-weight:500;margin-bottom:3px;transition:background .17s,color .17s;}
@@ -19,31 +17,23 @@
 .sw-spacer{flex:1;}
 .sw-out{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:10px;border:1.5px solid var(--red);background:transparent;color:var(--red);font-size:14px;font-weight:600;cursor:pointer;width:100%;text-decoration:none;transition:background .17s;}
 .sw-out:hover{background:var(--red-l);text-decoration:none;color:var(--red);}
-
-/* main */
 .sw-main{margin-left:var(--sidebar-w);flex:1;padding:40px 36px 60px;}
 .sw-hd{margin-bottom:28px;}
 .sw-hd h1{font-size:24px;font-weight:700;color:var(--text);margin:0 0 4px;}
 .sw-hd p{color:var(--light);font-size:14px;margin:0;}
-
-/* card */
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;margin-bottom:24px;}
 .card-hd{padding:18px 24px;border-bottom:1px solid var(--border);font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:space-between;}
 .card-bd{padding:24px;}
-
-/* form */
 .fg{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
 .fg label{font-size:12px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:.05em;}
 .fg select,.fg input{padding:10px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px;font-family:inherit;color:var(--text);outline:none;transition:border-color .15s;background:var(--card);}
 .fg select:focus,.fg input:focus{border-color:var(--blue);}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
 .btn{display:inline-flex;align-items:center;gap:7px;padding:10px 20px;border-radius:9px;border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none;transition:opacity .15s;}
 .btn-blue{background:var(--blue);color:#fff;}.btn-blue:hover{opacity:.88;}
 .btn-red{background:var(--red);color:#fff;}.btn-red:hover{opacity:.88;}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--mid);}.btn-outline:hover{border-color:var(--blue);color:var(--blue);}
 .btn-sm{padding:5px 12px;font-size:12.5px;}
-
-/* table */
 .tbl{width:100%;border-collapse:collapse;}
 .tbl th{text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--light);padding:11px 20px;background:#fafafa;border-bottom:1px solid var(--border);}
 .tbl td{padding:13px 20px;font-size:14px;border-bottom:1px solid #f3f4f6;color:var(--mid);}
@@ -54,13 +44,49 @@
 .b-td{background:var(--amber-l);color:var(--amber);}
 .b-done{background:#f3f4f6;color:var(--mid);}
 .empty{text-align:center;color:var(--light);padding:40px;font-size:14px;}
-
-/* alerts */
 .alert{padding:12px 16px;border-radius:9px;font-size:13.5px;margin-bottom:18px;}
 .alert-success{background:var(--green-l);color:#065f46;border:1px solid #6ee7b7;}
 .alert-error{background:var(--red-l);color:#991b1b;border:1px solid #fca5a5;}
 
-@media(max-width:768px){.sw-side{display:none;}.sw-main{margin-left:0;padding:20px 14px 40px;}.grid2,.grid4{grid-template-columns:1fr;}}
+/* Calendar */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:16px;}
+.cal-hdr{font-size:11px;font-weight:700;color:var(--light);text-transform:uppercase;text-align:center;padding-bottom:6px;}
+.cal-day{border-radius:10px;padding:10px 4px;text-align:center;border:2px solid var(--border);cursor:pointer;transition:all .15s;}
+.cal-day:hover{border-color:var(--blue);background:var(--blue-l);}
+.cal-day.selected{border-color:var(--green)!important;background:var(--green)!important;color:#fff!important;}
+.cal-day.available{border-color:#bbf7d0;background:#f0fdf4;color:#065f46;}
+.cal-day.unavailable{border-color:#fca5a5;background:#fef2f2;color:#ef4444;cursor:not-allowed;}
+.cal-day.past{border-color:#e5e7eb;background:#f9fafb;color:#d1d5db;cursor:not-allowed;opacity:.5;}
+.cal-num{font-size:19px;font-weight:700;font-family:'DM Mono',monospace;line-height:1.2;}
+.cal-mon{font-size:10px;opacity:.7;margin-top:2px;}
+
+/* Slots */
+.slot-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px;}
+.slot-item{border-radius:10px;padding:10px 6px;text-align:center;border:2px solid;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif;}
+.slot-item.free{border-color:#bbf7d0;background:#f0fdf4;color:#065f46;}
+.slot-item.free:hover{border-color:var(--green);background:#dcfce7;}
+.slot-item.free.picked{border-color:var(--green);background:var(--green);color:#fff;}
+.slot-item.taken{border-color:#fca5a5;background:#fef2f2;color:#ef4444;cursor:not-allowed;}
+.slot-time{font-size:14px;font-weight:700;font-family:'DM Mono',monospace;}
+.slot-range{font-size:10px;opacity:.7;margin-top:2px;}
+.slot-tag{font-size:10px;font-weight:700;text-transform:uppercase;margin-top:3px;}
+
+/* Summary */
+.summary-box{background:#f0fdf4;border:1.5px solid #86efac;border-radius:12px;padding:16px 20px;margin-bottom:14px;}
+.summary-box h4{font-size:13px;font-weight:700;color:#15803d;margin:0 0 10px;}
+.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13.5px;}
+.summary-grid span{color:#16a34a;font-weight:600;}
+
+.info-box{padding:10px 14px;border-radius:9px;font-size:13px;font-weight:500;margin-bottom:16px;}
+.info-green{background:var(--green-l);color:#065f46;border:1px solid #6ee7b7;}
+.info-amber{background:var(--amber-l);color:#92400e;border:1px solid #fde68a;}
+.info-blue{background:var(--blue-l);color:#1e40af;border:1px solid #bfdbfe;}
+.week-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.week-nav span{font-size:14px;font-weight:600;color:var(--text);}
+.week-btn{background:none;border:1.5px solid var(--border);border-radius:8px;padding:5px 14px;cursor:pointer;font-size:14px;font-family:inherit;}
+.week-btn:hover{border-color:var(--blue);color:var(--blue);}
+
+@media(max-width:768px){.sw-side{display:none;}.sw-main{margin-left:0;padding:20px 14px 40px;}.grid2{grid-template-columns:1fr;}.slot-grid{grid-template-columns:repeat(3,1fr);}}
 </style>
 
 <div class="sw">
@@ -86,6 +112,10 @@
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
         Billing
     </a>
+    <a href="{% url 'staff_report' %}" class="sw-nav">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Reports
+    </a>
     <div class="sw-spacer"></div>
     <a href="{% url 'logout_admin' %}" class="sw-out">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -106,48 +136,98 @@
         {% endfor %}
     {% endif %}
 
-    <!-- Book New Appointment -->
+    <!-- BOOKING FORM -->
     <div class="card">
-        <div class="card-hd">
-            📅 Book New Appointment
-        </div>
+        <div class="card-hd">📅 Book New Appointment</div>
         <div class="card-bd">
-            <form method="POST" action="{% url 'add_appointment' %}">
+
+            <!-- Step 1: Doctor + Patient -->
+            <div class="grid2">
+                <div class="fg">
+                    <label>Doctor *</label>
+                    <select id="docSelect" onchange="onDoctorChange()">
+                        <option value="">— Select Doctor —</option>
+                        {% for d in doctors %}
+                        <option value="{{ d.id }}" data-name="Dr. {{ d.Name }}">Dr. {{ d.Name }} ({{ d.Special }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="fg">
+                    <label>Patient *</label>
+                    <select id="patSelect">
+                        <option value="">— Select Patient —</option>
+                        {% for p in patients %}
+                        <option value="{{ p.Name }}">{{ p.Name }} ({{ p.Mobile }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Availability hint -->
+            <div id="docHint" style="display:none;" class="info-box"></div>
+
+            <!-- Step 2: Calendar -->
+            <div id="calSection" style="display:none;">
+                <div class="week-nav">
+                    <button type="button" class="week-btn" onclick="changeWeek(-1)">&#8592; Prev</button>
+                    <span id="weekLabel"></span>
+                    <button type="button" class="week-btn" onclick="changeWeek(1)">Next &#8594;</button>
+                </div>
+                <div class="cal-grid" id="calGrid"></div>
+            </div>
+
+            <!-- Step 3: Slots -->
+            <div id="slotSection" style="display:none;">
+                <div id="slotInfo" class="info-box info-blue"></div>
+                <div class="slot-grid" id="slotGrid"></div>
+                <p id="noSlots" style="display:none;text-align:center;color:var(--light);font-size:14px;">No available slots for this date.</p>
+            </div>
+
+            <!-- Step 4: Confirm form -->
+            <form method="POST" action="{% url 'staff_book_appointment' %}" id="staffBookForm" style="display:none;">
                 {% csrf_token %}
+                <input type="hidden" name="doctor_id" id="hDoctorId">
+                <input type="hidden" name="patient"   id="hPatient">
+                <input type="hidden" name="slot_id"   id="hSlotId">
+                <input type="hidden" name="date"      id="hDate">
+                <input type="hidden" name="time"      id="hTime">
+                <div class="summary-box">
+                    <h4>Booking Summary</h4>
+                    <div class="summary-grid">
+                        <div><span>Doctor:</span> <span id="confDoc"></span></div>
+                        <div><span>Patient:</span> <span id="confPat"></span></div>
+                        <div><span>Date:</span> <span id="confDate"></span></div>
+                        <div><span>Time:</span> <span id="confTime"></span></div>
+                    </div>
+                </div>
+                <div style="display:flex;gap:10px;">
+                    <button type="submit" class="btn btn-blue">Confirm Booking</button>
+                    <button type="button" class="btn btn-outline" onclick="resetAll()">Start Over</button>
+                </div>
+            </form>
+
+            <!-- Manual fallback (no schedule set) -->
+            <form method="POST" action="{% url 'staff_book_appointment' %}" id="manualForm" style="display:none;">
+                {% csrf_token %}
+                <input type="hidden" name="doctor_id" id="mDoctorId">
+                <input type="hidden" name="patient"   id="mPatient">
                 <div class="grid2">
                     <div class="fg">
-                        <label>Doctor</label>
-                        <select name="doctor" required>
-                            <option value="">— Select Doctor —</option>
-                            {% for d in doctors %}
-                            <option value="{{ d.Name }}">Dr. {{ d.Name }} ({{ d.Special }})</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="fg">
-                        <label>Patient</label>
-                        <select name="patient" required>
-                            <option value="">— Select Patient —</option>
-                            {% for p in patients %}
-                            <option value="{{ p.Name }}">{{ p.Name }} ({{ p.Mobile }})</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="fg">
                         <label>Date</label>
-                        <input type="date" name="date" required min="{{ today }}">
+                        <input type="date" name="date" min="{{ today }}">
                     </div>
                     <div class="fg">
                         <label>Time</label>
-                        <input type="time" name="time" required>
+                        <input type="time" name="time">
                     </div>
                 </div>
-                <button type="submit" class="btn btn-blue">Book Appointment</button>
+                <button type="submit" class="btn btn-blue" onclick="syncManual()">Book Appointment</button>
             </form>
+
         </div>
     </div>
 
-    <!-- Appointments Table -->
+    <!-- APPOINTMENTS TABLE -->
     <div class="card">
         <div class="card-hd">
             All Appointments
@@ -156,16 +236,7 @@
         {% if appointments %}
         <table class="tbl">
             <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Doctor</th>
-                    <th>Patient</th>
-                    <th>Mobile</th>
-                    <th>Date</th>
-                    <th>Time</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
+                <tr><th>#</th><th>Doctor</th><th>Patient</th><th>Mobile</th><th>Date</th><th>Time</th><th>Status</th><th>Action</th></tr>
             </thead>
             <tbody>
                 {% for apt in appointments %}
@@ -175,15 +246,11 @@
                     <td>{{ apt.Patient.Name }}</td>
                     <td>{{ apt.Patient.Mobile }}</td>
                     <td>{{ apt.date|date:"M d, Y" }}</td>
-                    <td>{{ apt.time }}</td>
+                    <td>{{ apt.time|time:"H:i" }}</td>
                     <td>
-                        {% if apt.date > today %}
-                            <span class="badge b-up">Upcoming</span>
-                        {% elif apt.date == today %}
-                            <span class="badge b-td">Today</span>
-                        {% else %}
-                            <span class="badge b-done">Completed</span>
-                        {% endif %}
+                        {% if apt.date > today %}<span class="badge b-up">Upcoming</span>
+                        {% elif apt.date == today %}<span class="badge b-td">Today</span>
+                        {% else %}<span class="badge b-done">Completed</span>{% endif %}
                     </td>
                     <td>
                         <a href="{% url 'delete_appointment' apt.id %}"
@@ -200,4 +267,213 @@
     </div>
 </main>
 </div>
+
+<script>
+const AVAIL     = {{ availability_json|safe }};
+const SLOTS_URL = "{% url 'get_slots' %}";
+const MONTHS    = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+let selDoctor = null, selDocName = '', selWeek = 0, selDate = null, selSlot = null;
+
+function toYMD(d) {
+    return d.getFullYear() + '-' +
+           String(d.getMonth()+1).padStart(2,'0') + '-' +
+           String(d.getDate()).padStart(2,'0');
+}
+
+function fmtDate(ymd) {
+    const p = ymd.split('-');
+    return MONTHS[parseInt(p[1])-1] + ' ' + parseInt(p[2]) + ', ' + p[0];
+}
+
+/* ── Step 1: Doctor selected ── */
+function onDoctorChange() {
+    const sel = document.getElementById('docSelect');
+    const id  = parseInt(sel.value);
+    resetAfterDoctor();
+    if (!id) return;
+
+    selDoctor  = id;
+    selDocName = sel.options[sel.selectedIndex].getAttribute('data-name');
+    selWeek    = 0;
+
+    const avail = AVAIL[id] || {};
+    const days  = avail.schedule_days || [];
+    const hint  = document.getElementById('docHint');
+    const DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+    if (days.length === 0) {
+        hint.className   = 'info-box info-amber';
+        hint.textContent = 'No schedule set for this doctor. Enter date and time manually below.';
+        hint.style.display = 'block';
+        document.getElementById('mDoctorId').value = id;
+        document.getElementById('manualForm').style.display = 'block';
+    } else {
+        hint.className   = 'info-box info-green';
+        hint.textContent = selDocName + ' is available on: ' + days.map(function(d){ return DAY_NAMES[d]; }).join(', ') + '. Green = available, Red = unavailable.';
+        hint.style.display = 'block';
+        document.getElementById('calSection').style.display = 'block';
+        renderCal();
+    }
+}
+
+/* ── Week navigation ── */
+function changeWeek(dir) {
+    selWeek += dir;
+    if (selWeek < 0) selWeek = 0;
+    renderCal();
+}
+
+/* ── Render calendar ── */
+function renderCal() {
+    var today = new Date(); today.setHours(0,0,0,0);
+    var sunday = new Date(today);
+    sunday.setDate(today.getDate() - today.getDay() + selWeek * 7);
+
+    var avail  = AVAIL[selDoctor] || {};
+    var sched  = avail.schedule_days || [];
+    var leaves = avail.leaves || [];
+
+    var endSat = new Date(sunday); endSat.setDate(sunday.getDate() + 6);
+    document.getElementById('weekLabel').textContent =
+        MONTHS[sunday.getMonth()] + ' ' + sunday.getDate() +
+        ' - ' + MONTHS[endSat.getMonth()] + ' ' + endSat.getDate() + ', ' + endSat.getFullYear();
+
+    var grid = document.getElementById('calGrid');
+    grid.innerHTML = '';
+
+    /* Header row */
+    var headers = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    for (var h = 0; h < 7; h++) {
+        var hd = document.createElement('div');
+        hd.className   = 'cal-hdr';
+        hd.textContent = headers[h];
+        grid.appendChild(hd);
+    }
+
+    /* Day cells */
+    for (var i = 0; i < 7; i++) {
+        var d   = new Date(sunday); d.setDate(sunday.getDate() + i);
+        var ymd = toYMD(d);
+
+        /* JS Sun=0, Mon=1… → our schedule Mon=0, Sun=6 */
+        var jsDow = d.getDay();
+        var dow   = jsDow === 0 ? 6 : jsDow - 1;
+
+        var isPast    = d < today;
+        var isLeave   = leaves.indexOf(ymd) !== -1;
+        var isWorking = sched.indexOf(dow) !== -1;
+
+        var cell = document.createElement('div');
+        cell.className = 'cal-day';
+
+        cell.innerHTML =
+            '<div class="cal-num">' + d.getDate() + '</div>' +
+            '<div class="cal-mon">' + MONTHS[d.getMonth()] + '</div>';
+
+        if (isPast) {
+            cell.classList.add('past');
+        } else if (isLeave || !isWorking) {
+            cell.classList.add('unavailable');
+            cell.title = isLeave ? 'Doctor on leave' : 'Not available this day';
+        } else {
+            cell.classList.add('available');
+            if (ymd === selDate) cell.classList.add('selected');
+            (function(ymdCopy, dCopy) {
+                cell.onclick = function() { pickDate(ymdCopy, dCopy); };
+            })(ymd, d);
+        }
+        grid.appendChild(cell);
+    }
+}
+
+/* ── Date picked ── */
+function pickDate(ymd, dateObj) {
+    selDate = ymd;
+    document.getElementById('hDate').value = ymd;
+    renderCal(); /* re-render to show selection */
+
+    var sec  = document.getElementById('slotSection');
+    var grid = document.getElementById('slotGrid');
+    var none = document.getElementById('noSlots');
+    var info = document.getElementById('slotInfo');
+
+    sec.style.display  = 'block';
+    grid.innerHTML     = '<div style="color:#9ca3af;font-size:13px;padding:16px;">Loading slots...</div>';
+    none.style.display = 'none';
+    document.getElementById('staffBookForm').style.display = 'none';
+
+    info.textContent = 'Available slots for ' + selDocName + ' on ' + fmtDate(ymd);
+
+    fetch(SLOTS_URL + '?doctor=' + selDoctor + '&date=' + ymd)
+        .then(function(r){ return r.json(); })
+        .then(function(data) {
+            grid.innerHTML = '';
+            if (!data.slots || data.slots.length === 0) {
+                none.style.display = 'block';
+                return;
+            }
+            data.slots.forEach(function(slot) {
+                var btn = document.createElement('div');
+                btn.className = 'slot-item ' + (slot.status === 'available' ? 'free' : 'taken');
+                btn.innerHTML =
+                    '<div class="slot-time">' + slot.start + '</div>' +
+                    '<div class="slot-range">' + slot.start + '-' + slot.end + '</div>' +
+                    '<div class="slot-tag">' + (slot.status === 'available' ? 'Free' : 'Taken') + '</div>';
+                if (slot.status === 'available') {
+                    (function(s) {
+                        btn.onclick = function() { pickSlot(btn, s); };
+                    })(slot);
+                }
+                grid.appendChild(btn);
+            });
+        })
+        .catch(function() {
+            grid.innerHTML = '';
+            none.style.display = 'block';
+        });
+}
+
+/* ── Slot picked ── */
+function pickSlot(el, slot) {
+    document.querySelectorAll('.slot-item.free').forEach(function(b){ b.classList.remove('picked'); });
+    el.classList.add('picked');
+    selSlot = slot;
+
+    var patSel = document.getElementById('patSelect');
+    document.getElementById('hSlotId').value   = slot.id;
+    document.getElementById('hTime').value     = slot.start;
+    document.getElementById('hDoctorId').value = selDoctor;
+    document.getElementById('hPatient').value  = patSel.value;
+
+    document.getElementById('confDoc').textContent  = selDocName;
+    document.getElementById('confPat').textContent  = patSel.options[patSel.selectedIndex].text;
+    document.getElementById('confDate').textContent = fmtDate(selDate);
+    document.getElementById('confTime').textContent = slot.start + ' - ' + slot.end;
+
+    document.getElementById('staffBookForm').style.display = 'block';
+}
+
+/* ── Manual fallback sync ── */
+function syncManual() {
+    document.getElementById('mPatient').value = document.getElementById('patSelect').value;
+}
+
+/* ── Reset helpers ── */
+function resetAfterDoctor() {
+    selDate = null; selSlot = null;
+    document.getElementById('calSection').style.display    = 'none';
+    document.getElementById('slotSection').style.display   = 'none';
+    document.getElementById('staffBookForm').style.display = 'none';
+    document.getElementById('manualForm').style.display    = 'none';
+    document.getElementById('docHint').style.display       = 'none';
+}
+
+function resetAll() {
+    selDoctor = null; selDocName = ''; selWeek = 0;
+    document.getElementById('docSelect').value = '';
+    document.getElementById('patSelect').value = '';
+    resetAfterDoctor();
+}
+</script>
 {% endblock %}

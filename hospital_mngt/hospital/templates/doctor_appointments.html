@@ -37,7 +37,7 @@
                                         </td>
                                         <td>{{ apt.Patient.Mobile }}</td>
                                         <td>{{ apt.date|date:"M d, Y" }}</td>
-                                        <td>{{ apt.time }}</td>
+                                        <td>{{ apt.time|time:"H:i" }}</td>
                                         <td>
                                             {% if apt.date > today %}
                                                 <span class="badge bg-success">Upcoming</span>

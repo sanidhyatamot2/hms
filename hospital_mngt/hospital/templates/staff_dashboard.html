@@ -285,7 +285,7 @@
 
         <!-- Stat Cards -->
         <div class="sp-stats">
-            <!-- uses your {{ today_appointments_count }} -->
+            <!-- Appointments stat card -->
             <div class="sp-stat">
                 <div class="sp-ic ic-green">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -295,7 +295,7 @@
                 </div>
                 <span class="sp-stat-lbl">Today's Appointments</span>
                 <span class="sp-stat-val val-green">{{ today_appointments_count }}</span>
-                <span class="sp-stat-sub">Scheduled</span>
+                <span class="sp-stat-sub">Today &nbsp;|&nbsp; {{ total_appointments }} Total</span>
             </div>
 
             <!-- uses your {{ total_pending|floatformat:2 }} -->
@@ -309,6 +309,20 @@
                 <span class="sp-stat-lbl">Total Pending Bills</span>
                 <span class="sp-stat-val val-amber" style="font-size:19px;">NPR {{ total_pending|floatformat:2 }}</span>
                 <span class="sp-stat-sub">Awaiting payment</span>
+            </div>
+
+            <!-- Total patients registered -->
+            <div class="sp-stat">
+                <div class="sp-ic ic-blue">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                </div>
+                <span class="sp-stat-lbl">Total Patients</span>
+                <span class="sp-stat-val val-blue">{{ total_patients }}</span>
+                <span class="sp-stat-sub">Registered</span>
             </div>
 
         </div>
