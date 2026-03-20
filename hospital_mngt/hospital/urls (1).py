@@ -1,0 +1,107 @@
+from django.urls import path
+from django.conf import settings
+from django.conf.urls.static import static
+
+from .views import (
+    # Public
+    About, Home, Contact,
+    # Auth
+    main_login, admin_login, doctor_login, patient_login,
+    staff_login, staff_signup,
+    Logout_admin,
+    signup, doctor_signup, patient_signup,
+    # Admin
+    Index,
+    View_Doctor, Delete_Doctor, Add_Doctor,
+    View_Patient, Delete_Patient, Add_Patient,
+    View_Appointment, Add_Appointment, Delete_Appointment,
+    # Doctor portal
+    doctor_dashboard, doctor_appointments,
+    doctor_my_patients, doctor_prescriptions, prescribe_medicine,
+    # Patient portal
+    patient_dashboard, patient_book_appointment,
+    patient_appointments, cancel_appointment,
+    # Staff
+    staff_dashboard,
+    # Billing
+    bill_list, create_bill, bill_detail,
+    add_bill_item, remove_bill_item,
+    record_payment, mark_bill_paid,
+    charge_master, toggle_charge_item,
+    add_bill, get_item_price,
+)
+
+urlpatterns = [
+    # ── Root
+    path('', main_login, name='root'),
+
+    # ── Public pages
+    path('about/',   About,   name='about'),
+    path('home/',    Home,    name='home'),
+    path('contact/', Contact, name='contact'),
+
+    # ── Auth
+    path('login/',          main_login,    name='main_login'),
+    path('admin-login/',    admin_login,   name='admin_login'),
+    path('doctor-login/',   doctor_login,  name='doctor_login'),
+    path('patient-login/',  patient_login, name='patient_login'),
+    path('staff-login/',    staff_login,   name='staff_login'),
+    path('logout/',         Logout_admin,  name='logout_admin'),
+
+    path('signup/',         signup,         name='signup'),
+    path('doctor-signup/',  doctor_signup,  name='doctor_signup'),
+    path('patient-signup/', patient_signup, name='patient_signup'),
+    path('staff-signup/',   staff_signup,   name='staff_signup'),
+
+    # ── Admin dashboard
+    path('index/', Index, name='dashboard'),
+
+    # ── Doctor CRUD
+    path('view_doctor/',              View_Doctor,   name='view_doctor'),
+    path('add_doctor/',               Add_Doctor,    name='add_doctor'),
+    path('delete_doctor/<int:pid>/',  Delete_Doctor, name='delete_doctor'),
+
+    # ── Patient CRUD
+    path('view_patient/',              View_Patient,   name='view_patient'),
+    path('add_patient/',               Add_Patient,    name='add_patient'),
+    path('delete_patient/<int:pid>/',  Delete_Patient, name='delete_patient'),
+
+    # ── Appointment CRUD
+    path('view_appointment/',              View_Appointment,   name='view_appointment'),
+    path('add_appointment/',               Add_Appointment,    name='add_appointment'),
+    path('delete_appointment/<int:pid>/',  Delete_Appointment, name='delete_appointment'),
+
+    # ── Doctor portal
+    path('doctor-dashboard/',                     doctor_dashboard,     name='doctor_dashboard'),
+    path('doctor-appointments/',                  doctor_appointments,  name='doctor_appointments'),
+    path('doctor-my-patients/',                   doctor_my_patients,   name='doctor_my_patients'),
+    path('doctor-prescriptions/',                 doctor_prescriptions, name='doctor_prescriptions'),
+    path('doctor/prescribe/<int:patient_id>/',    prescribe_medicine,   name='prescribe_medicine'),
+
+    # ── Patient portal
+    path('patient-dashboard/',                    patient_dashboard,        name='patient_dashboard'),
+    path('patient-book-appointment/',             patient_book_appointment, name='patient_book_appointment'),
+    path('patient-appointments/',                 patient_appointments,     name='patient_appointments'),
+    path('cancel-appointment/<int:apt_id>/',      cancel_appointment,       name='cancel_appointment'),
+
+    # ── Staff
+    path('staff-dashboard/', staff_dashboard, name='staff_dashboard'),
+
+    # ── Billing
+    path('billing/',                              bill_list,           name='bill_list'),
+    path('billing/create/',                       create_bill,         name='create_bill'),
+    path('billing/<int:pk>/',                     bill_detail,         name='bill_detail'),
+    path('billing/<int:bill_pk>/add-item/',       add_bill_item,       name='add_bill_item'),
+    path('billing/item/<int:item_pk>/remove/',    remove_bill_item,    name='remove_bill_item'),
+    path('billing/<int:bill_pk>/pay/',            record_payment,      name='record_payment'),
+    path('billing/<int:pk>/mark-paid/',           mark_bill_paid,      name='mark_bill_paid'),
+    path('billing/charges/',                      charge_master,       name='charge_master'),
+    path('billing/charges/<int:pk>/toggle/',      toggle_charge_item,  name='toggle_charge_item'),
+    path('billing/api/price/',                    get_item_price,      name='get_item_price'),
+
+    # Legacy
+    path('staff/add-bill/', add_bill, name='add_bill'),
+]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

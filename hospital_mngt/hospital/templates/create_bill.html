@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Create Bill{% endblock %}
+{% block content %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+:root{--blue:#1a6ef5;--blue-l:#e8f0fe;--green:#0fa66a;--border:#e5e7eb;--text:#111827;--mid:#4b5563;--light:#9ca3af;--card:#fff;--page:#f9fafb;--r:14px;--sh:0 2px 12px rgba(0,0,0,.07);}
+.cb*{box-sizing:border-box;}
+.cb{font-family:'DM Sans',sans-serif;background:var(--page);padding:36px;min-height:100vh;max-width:640px;margin:0 auto;}
+.cb h1{font-size:22px;font-weight:700;margin:0 0 4px;}
+.cb .sub{color:var(--light);font-size:14px;margin:0 0 24px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);padding:26px;}
+.info{background:var(--blue-l);border:1px solid #bfdbfe;border-radius:9px;padding:11px 15px;font-size:13px;color:#1e40af;margin-bottom:18px;}
+.fg{display:flex;flex-direction:column;gap:4px;margin-bottom:13px;}
+.fg label{font-size:12px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:.05em;}
+.fg input,.fg select,.fg textarea{padding:10px 13px;border:1px solid var(--border);border-radius:9px;font-size:14px;font-family:inherit;color:var(--text);outline:none;}
+.fg input:focus,.fg select:focus{border-color:var(--blue);}
+.gr2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:11px 22px;border-radius:9px;border:none;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;font-family:inherit;width:100%;justify-content:center;margin-top:6px;}
+.btn-blue{background:var(--blue);color:#fff;}
+.btn-out{background:transparent;border:1.5px solid var(--border);color:var(--mid);}
+</style>
+<div class="cb">
+    <h1>Create New Bill</h1>
+    <p class="sub">A registration fee is added automatically based on visit type.</p>
+    <div class="info">ℹ️ Registration fee and consultation fee are added automatically on bill creation.</div>
+    <div class="card">
+        <form method="post" action="{% url 'create_bill' %}">
+            {% csrf_token %}
+            <div class="fg">
+                <label>Patient *</label>
+                <select name="patient" required>
+                    <option value="">— Select patient —</option>
+                    {% for p in patients %}
+                    <option value="{{ p.pk }}">{{ p.Name }} ({{ p.Mobile }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="fg">
+                <label>Visit Type *</label>
+                <select name="visit_type" required>
+                    {% for val,label in visit_types %}
+                    <option value="{{ val }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="fg">
+                <label>Notes (optional)</label>
+                <textarea name="notes" rows="3" placeholder="Any notes for this bill..." style="resize:vertical;"></textarea>
+            </div>
+            <button type="submit" class="btn btn-blue">Create Bill →</button>
+            <a href="{% url 'bill_list' %}" class="btn btn-out">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

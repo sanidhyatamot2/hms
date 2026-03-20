@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+{% block title %}Reports – Staff Portal{% endblock %}
+
+{% block content %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@500&display=swap');
+:root{--blue:#1a6ef5;--blue-l:#e8f0fe;--green:#0fa66a;--green-l:#e6f7f1;--amber:#d97706;--amber-l:#fff8e1;--red:#e53935;--red-l:#fdecea;--teal:#0891b2;--teal-l:#e0f5fb;--sidebar-bg:#f4f6fb;--sidebar-w:255px;--text:#111827;--mid:#4b5563;--light:#9ca3af;--border:#e5e7eb;--card:#fff;--page:#f9fafb;--r:14px;--sh:0 2px 12px rgba(0,0,0,.07);--sh-md:0 6px 24px rgba(0,0,0,.11);}
+.sw*{box-sizing:border-box;}
+.sw{font-family:'DM Sans',sans-serif;display:flex;min-height:100vh;background:var(--page);margin:0;padding:0!important;}
+.sw-side{width:var(--sidebar-w);background:var(--sidebar-bg);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:28px 14px;position:fixed;top:0;left:0;bottom:0;z-index:200;}
+.sw-brand{display:flex;align-items:center;gap:10px;padding:0 8px 24px;border-bottom:1px solid var(--border);margin-bottom:18px;color:var(--blue);font-weight:700;font-size:17px;text-decoration:none;}
+.sw-nav{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:10px;text-decoration:none;color:var(--mid);font-size:14px;font-weight:500;margin-bottom:3px;transition:background .17s,color .17s;}
+.sw-nav:hover{background:#e8edf8;color:var(--blue);text-decoration:none;}
+.sw-nav.active{background:var(--blue);color:#fff;}
+.sw-nav.active svg{stroke:#fff!important;}
+.sw-nav svg{stroke:currentColor;flex-shrink:0;}
+.sw-spacer{flex:1;}
+.sw-out{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:10px;border:1.5px solid var(--red);background:transparent;color:var(--red);font-size:14px;font-weight:600;cursor:pointer;width:100%;text-decoration:none;transition:background .17s;}
+.sw-out:hover{background:var(--red-l);text-decoration:none;color:var(--red);}
+.sw-main{margin-left:var(--sidebar-w);flex:1;padding:40px 36px 60px;}
+.sw-hd{margin-bottom:28px;}
+.sw-hd h1{font-size:24px;font-weight:700;color:var(--text);margin:0 0 4px;}
+.sw-hd p{color:var(--light);font-size:14px;margin:0;}
+
+/* stat row */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px;}
+.sc{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;box-shadow:var(--sh);display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;}
+.sc .ic{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:4px;}
+.ig{background:var(--green-l);color:var(--green);}
+.ib{background:var(--blue-l);color:var(--blue);}
+.it{background:var(--teal-l);color:var(--teal);}
+.slbl{font-size:12px;color:var(--mid);font-weight:500;}
+.sval{font-size:28px;font-weight:700;font-family:'DM Mono',monospace;}
+.ssub{font-size:11px;color:var(--light);}
+.vg{color:var(--green);}.vb{color:var(--blue);}.vt{color:var(--teal);}
+
+/* section title */
+.sec-title{font-size:17px;font-weight:700;color:var(--text);margin:0 0 16px;display:flex;align-items:center;gap:8px;}
+.sec-title .cnt{font-size:13px;font-weight:400;color:var(--light);margin-left:4px;}
+
+/* filter bar */
+.filter-bar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center;}
+.filter-bar input,.filter-bar select{padding:9px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px;font-family:inherit;outline:none;background:var(--card);color:var(--text);}
+.filter-bar input:focus,.filter-bar select:focus{border-color:var(--blue);}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--mid);padding:9px 18px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;}
+.btn-outline:hover{border-color:var(--blue);color:var(--blue);}
+
+/* file grid */
+.file-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-bottom:36px;}
+.file-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;transition:box-shadow .2s,transform .2s;display:flex;flex-direction:column;}
+.file-card:hover{box-shadow:var(--sh-md);transform:translateY(-2px);}
+
+/* file preview area */
+.file-preview{height:140px;display:flex;align-items:center;justify-content:center;background:#f8fafc;border-bottom:1px solid var(--border);position:relative;}
+.file-preview img{width:100%;height:100%;object-fit:cover;}
+.file-preview .file-icon{font-size:52px;line-height:1;}
+.file-type-tag{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.55);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;text-transform:uppercase;}
+
+/* file body */
+.file-body{padding:14px 16px;flex:1;display:flex;flex-direction:column;gap:6px;}
+.file-title{font-size:14px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.file-meta{font-size:12px;color:var(--light);}
+.file-patient{display:inline-flex;align-items:center;gap:5px;background:var(--blue-l);color:var(--blue);font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:999px;}
+.file-desc{font-size:12.5px;color:var(--mid);line-height:1.5;margin-top:2px;}
+
+/* file actions */
+.file-actions{padding:10px 16px;border-top:1px solid #f3f4f6;display:flex;gap:8px;}
+.btn-view{flex:1;background:var(--blue);color:#fff;border:none;border-radius:8px;padding:8px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;text-align:center;font-family:inherit;display:block;}
+.btn-view:hover{opacity:.88;text-decoration:none;color:#fff;}
+.btn-dl{flex:1;background:transparent;border:1.5px solid var(--border);color:var(--mid);border-radius:8px;padding:8px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;text-align:center;font-family:inherit;display:block;}
+.btn-dl:hover{border-color:var(--green);color:var(--green);text-decoration:none;}
+
+/* empty state */
+.empty-state{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:60px 24px;text-align:center;margin-bottom:32px;}
+.empty-state svg{opacity:.25;margin-bottom:14px;}
+.empty-state h4{font-size:16px;font-weight:600;color:var(--mid);margin:0 0 6px;}
+.empty-state p{font-size:13.5px;color:var(--light);margin:0;}
+
+/* divider */
+.divider{border:none;border-top:1px solid var(--border);margin:28px 0;}
+
+@media(max-width:900px){.stats{grid-template-columns:1fr 1fr;}}
+@media(max-width:768px){.sw-side{display:none;}.sw-main{margin-left:0;padding:20px 14px 40px;}.file-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:480px){.file-grid{grid-template-columns:1fr;}}
+</style>
+
+<div class="sw">
+
+<!-- SIDEBAR -->
+<aside class="sw-side">
+    <a class="sw-brand" href="{% url 'staff_dashboard' %}">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        Staff Portal
+    </a>
+    <a href="{% url 'staff_dashboard' %}" class="sw-nav">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+    </a>
+    <a href="{% url 'view_appointment' %}" class="sw-nav">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Appointments
+    </a>
+    <a href="{% url 'view_patient' %}" class="sw-nav">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Patients
+    </a>
+    <a href="{% url 'add_bill' %}" class="sw-nav">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        Billing
+    </a>
+    <a href="{% url 'staff_report' %}" class="sw-nav active">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Reports
+    </a>
+    <div class="sw-spacer"></div>
+    <a href="{% url 'logout_admin' %}" class="sw-out">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign Out
+    </a>
+</aside>
+
+<!-- MAIN -->
+<main class="sw-main">
+    <div class="sw-hd">
+        <h1>Reports & Uploaded Files</h1>
+        <p>All medical reports and files uploaded by patients and doctors across the system.</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+        <div class="sc">
+            <div class="ic ib">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            <span class="slbl">Total Files</span>
+            <span class="sval vb">{{ total_files }}</span>
+            <span class="ssub">Uploaded system-wide</span>
+        </div>
+        <div class="sc">
+            <div class="ic ig">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            </div>
+            <span class="slbl">Patients with Files</span>
+            <span class="sval vg">{{ patients_with_files }}</span>
+            <span class="ssub">Have uploaded records</span>
+        </div>
+        <div class="sc">
+            <div class="ic it">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <span class="slbl">Latest Upload</span>
+            <span class="sval vt" style="font-size:15px;">{{ latest_upload|date:"M d"|default:"—" }}</span>
+            <span class="ssub">{{ latest_upload|date:"Y"|default:"No uploads yet" }}</span>
+        </div>
+    </div>
+
+    <!-- Search/filter -->
+    <form method="get" class="filter-bar">
+        <input type="text" name="search" value="{{ search }}" placeholder="Search by patient name or file title...">
+        <select name="patient_id">
+            <option value="">All Patients</option>
+            {% for p in all_patients %}
+            <option value="{{ p.id }}" {% if patient_filter == p.id|stringformat:"s" %}selected{% endif %}>{{ p.Name }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn-outline">Filter</button>
+        {% if search or patient_filter %}
+        <a href="{% url 'staff_report' %}" class="btn-outline" style="text-decoration:none;">Clear</a>
+        {% endif %}
+    </form>
+
+    <!-- ═══ PATIENT MEDICAL FILES ═══ -->
+    <div class="sec-title">
+        🗂️ Patient Medical Files
+        <span class="cnt">{{ medical_files|length }} file{{ medical_files|length|pluralize }}</span>
+    </div>
+
+    {% if medical_files %}
+    <div class="file-grid">
+        {% for file in medical_files %}
+        <div class="file-card">
+            <!-- Preview -->
+            <div class="file-preview">
+                {% with ext=file.file.name|lower %}
+                    {% if ".jpg" in ext or ".jpeg" in ext or ".png" in ext or ".gif" in ext or ".webp" in ext %}
+                        <img src="{{ file.file.url }}" alt="{{ file.title }}">
+                        <span class="file-type-tag">Image</span>
+                    {% elif ".pdf" in ext %}
+                        <span class="file-icon">📄</span>
+                        <span class="file-type-tag">PDF</span>
+                    {% elif ".doc" in ext or ".docx" in ext %}
+                        <span class="file-icon">📝</span>
+                        <span class="file-type-tag">Word</span>
+                    {% elif ".xls" in ext or ".xlsx" in ext %}
+                        <span class="file-icon">📊</span>
+                        <span class="file-type-tag">Excel</span>
+                    {% else %}
+                        <span class="file-icon">📎</span>
+                        <span class="file-type-tag">File</span>
+                    {% endif %}
+                {% endwith %}
+            </div>
+            <!-- Info -->
+            <div class="file-body">
+                <div class="file-title">{{ file.title }}</div>
+                <span class="file-patient">👤 {{ file.patient.Name }}</span>
+                <div class="file-meta">Uploaded {{ file.uploaded_at|date:"M d, Y" }} · {{ file.uploaded_at|timesince }} ago</div>
+                {% if file.description %}
+                <div class="file-desc">{{ file.description|truncatechars:80 }}</div>
+                {% endif %}
+            </div>
+            <!-- Actions -->
+            <div class="file-actions">
+                <a href="{{ file.file.url }}" target="_blank" class="btn-view">👁 View</a>
+                <a href="{{ file.file.url }}" download class="btn-dl">⬇ Download</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5" style="display:block;margin:0 auto 14px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <h4>No files found</h4>
+        <p>{% if search or patient_filter %}No files match your search. <a href="{% url 'staff_report' %}" style="color:var(--blue);">Clear filters</a>{% else %}Patients haven't uploaded any medical files yet.{% endif %}</p>
+    </div>
+    {% endif %}
+
+</main>
+</div>
+{% endblock %}

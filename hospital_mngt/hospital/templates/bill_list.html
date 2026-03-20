@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Billing — Med-Info HMS{% endblock %}
+
+{% block content %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@500&display=swap');
+:root{--blue:#1a6ef5;--blue-l:#e8f0fe;--green:#0fa66a;--green-l:#e6f7f1;--amber:#d97706;--amber-l:#fff8e1;--red:#e53935;--red-l:#fdecea;--border:#e5e7eb;--text:#111827;--mid:#4b5563;--light:#9ca3af;--card:#fff;--page:#f9fafb;--r:14px;--sh:0 2px 12px rgba(0,0,0,.07);}
+.bl*{box-sizing:border-box;}
+.bl{font-family:'DM Sans',sans-serif;background:var(--page);padding:36px;min-height:100vh;}
+.bl h1{font-size:24px;font-weight:700;color:var(--text);margin:0 0 4px;}
+.sub{color:var(--light);font-size:14px;margin:0 0 28px;}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
+.sc{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;box-shadow:var(--sh);}
+.sc .ic{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;}
+.ig{background:var(--green-l);color:var(--green);} .ia{background:var(--amber-l);color:var(--amber);} .ib{background:var(--blue-l);color:var(--blue);}
+.sc .lbl{font-size:12px;color:var(--mid);font-weight:500;margin-bottom:4px;}
+.sc .val{font-size:22px;font-weight:700;font-family:'DM Mono',monospace;}
+.sc .hint{font-size:11px;color:var(--light);}
+.vg{color:var(--green);}.va{color:var(--amber);}.vb{color:var(--blue);}
+.fbar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center;}
+.fbar input,.fbar select{padding:9px 13px;border:1px solid var(--border);border-radius:9px;font-size:14px;font-family:inherit;color:var(--text);outline:none;background:var(--card);}
+.fbar input:focus,.fbar select:focus{border-color:var(--blue);}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:9px;border:none;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;font-family:inherit;}
+.btn-blue{background:var(--blue);color:#fff;}
+.btn-out{background:transparent;border:1.5px solid var(--border);color:var(--mid);}
+.btn-out:hover{border-color:var(--blue);color:var(--blue);}
+.ml{margin-left:auto;}
+.tc{background:var(--card);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;}
+.tc table{width:100%;border-collapse:collapse;}
+.tc th{text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--light);padding:12px 20px;background:#fafafa;border-bottom:1px solid var(--border);}
+.tc td{padding:13px 20px;font-size:14px;border-bottom:1px solid #f3f4f6;color:var(--mid);}
+.tc tr:last-child td{border-bottom:none;}
+.tc tr:hover td{background:#f9fafb;}
+.mono{font-family:'DM Mono',monospace;font-size:13px;}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11.5px;font-weight:600;}
+.b-unpaid{background:var(--amber-l);color:var(--amber);} .b-partial{background:var(--blue-l);color:var(--blue);} .b-paid{background:var(--green-l);color:var(--green);}
+.empty{text-align:center;color:var(--light);padding:48px;font-size:14px;}
+@media(max-width:900px){.stats{grid-template-columns:1fr 1fr;}}
+</style>
+
+<div class="bl">
+    <h1>Billing</h1>
+    <p class="sub">Manage patient bills and payments.</p>
+
+    <div class="stats">
+        <div class="sc"><div class="ic ig"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="lbl">Today's Collection</div><div class="val vg">NPR {{ stats.today_collection|floatformat:2 }}</div><div class="hint">Paid today</div></div>
+        <div class="sc"><div class="ic ia"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="lbl">Pending Amount</div><div class="val va">NPR {{ stats.pending_amount|floatformat:2 }}</div><div class="hint">Outstanding</div></div>
+        <div class="sc"><div class="ic ib"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="lbl">Unpaid Bills</div><div class="val vb">{{ stats.unpaid_bills }}</div><div class="hint">Need action</div></div>
+        <div class="sc"><div class="ic ig"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="lbl">Paid Today</div><div class="val vg">{{ stats.paid_today }}</div><div class="hint">Settled</div></div>
+    </div>
+
+    <form method="get" class="fbar">
+        <input type="text" name="search" placeholder="Search bill # or patient..." value="{{ search }}" style="flex:1;min-width:180px;">
+        <select name="status">
+            <option value="">All Statuses</option>
+            <option value="unpaid"  {% if status == 'unpaid'  %}selected{% endif %}>Unpaid</option>
+            <option value="partial" {% if status == 'partial' %}selected{% endif %}>Partially Paid</option>
+            <option value="paid"    {% if status == 'paid'    %}selected{% endif %}>Paid</option>
+        </select>
+        <button type="submit" class="btn btn-out">Filter</button>
+        <a href="{% url 'create_bill' %}"  class="btn btn-blue ml">+ New Bill</a>
+        <a href="{% url 'charge_master' %}" class="btn btn-out">Charge Master</a>
+    </form>
+
+    <div class="tc">
+        <table>
+            <thead><tr><th>Bill #</th><th>Patient</th><th>Date</th><th>Total</th><th>Paid</th><th>Balance</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+                {% for bill in bills %}
+                <tr>
+                    <td class="mono">{{ bill.bill_number }}</td>
+                    <td style="font-weight:600;color:#111827;">{{ bill.patient.Name }}</td>
+                    <td>{{ bill.issue_date|date:"M d, Y" }}</td>
+                    <td class="mono">NPR {{ bill.total_amount|floatformat:2 }}</td>
+                    <td class="mono" style="color:var(--green);">NPR {{ bill.paid_amount|floatformat:2 }}</td>
+                    <td class="mono" style="color:var(--red);">NPR {{ bill.balance_due|floatformat:2 }}</td>
+                    <td>
+                        {% if bill.status == 'paid' %}<span class="badge b-paid">Paid</span>
+                        {% elif bill.status == 'partial' %}<span class="badge b-partial">Partial</span>
+                        {% else %}<span class="badge b-unpaid">Unpaid</span>{% endif %}
+                    </td>
+                    <td><a href="{% url 'bill_detail' bill.pk %}" class="btn btn-out" style="padding:6px 13px;font-size:13px;">Open →</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" class="empty">No bills found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

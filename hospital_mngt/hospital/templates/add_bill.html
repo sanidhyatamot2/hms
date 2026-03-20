@@ -1,0 +1,374 @@
+{% extends "base.html" %}
+{% block title %}Billing – Staff Portal{% endblock %}
+
+{% block content %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@500&display=swap');
+:root{--blue:#1a6ef5;--blue-l:#e8f0fe;--green:#0fa66a;--green-l:#e6f7f1;--amber:#d97706;--amber-l:#fff8e1;--red:#e53935;--red-l:#fdecea;--sidebar-bg:#f4f6fb;--sidebar-w:255px;--text:#111827;--mid:#4b5563;--light:#9ca3af;--border:#e5e7eb;--card:#fff;--page:#f9fafb;--r:14px;--sh:0 2px 12px rgba(0,0,0,.07);}
+.sw*{box-sizing:border-box;}
+.sw{font-family:'DM Sans',sans-serif;display:flex;min-height:100vh;background:var(--page);margin:0;padding:0!important;}
+.sw-side{width:var(--sidebar-w);background:var(--sidebar-bg);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:28px 14px;position:fixed;top:0;left:0;bottom:0;z-index:200;}
+.sw-brand{display:flex;align-items:center;gap:10px;padding:0 8px 24px;border-bottom:1px solid var(--border);margin-bottom:18px;color:var(--blue);font-weight:700;font-size:17px;text-decoration:none;}
+.sw-nav{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:10px;text-decoration:none;color:var(--mid);font-size:14px;font-weight:500;margin-bottom:3px;transition:background .17s,color .17s;}
+.sw-nav:hover{background:#e8edf8;color:var(--blue);text-decoration:none;}
+.sw-nav.active{background:var(--blue);color:#fff;}
+.sw-nav.active svg{stroke:#fff!important;}
+.sw-nav svg{stroke:currentColor;flex-shrink:0;}
+.sw-spacer{flex:1;}
+.sw-out{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:10px;border:1.5px solid var(--red);background:transparent;color:var(--red);font-size:14px;font-weight:600;cursor:pointer;width:100%;text-decoration:none;transition:background .17s;}
+.sw-out:hover{background:var(--red-l);text-decoration:none;color:var(--red);}
+.sw-main{margin-left:var(--sidebar-w);flex:1;padding:40px 36px 60px;}
+.sw-hd{margin-bottom:28px;}
+.sw-hd h1{font-size:24px;font-weight:700;color:var(--text);margin:0 0 4px;}
+.sw-hd p{color:var(--light);font-size:14px;margin:0;}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;}
+.sc{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;box-shadow:var(--sh);display:flex;flex-direction:column;gap:6px;}
+.sc .ic{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:4px;}
+.sc .lbl{font-size:12px;color:var(--mid);font-weight:500;}
+.sc .val{font-size:22px;font-weight:700;font-family:'DM Mono',monospace;}
+.sc .sub{font-size:11px;color:var(--light);}
+.ig{background:var(--green-l);color:var(--green);}
+.ia{background:var(--amber-l);color:var(--amber);}
+.ib{background:var(--blue-l);color:var(--blue);}
+.vg{color:var(--green);}.va{color:var(--amber);}.vb{color:var(--blue);}
+
+/* cards */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;margin-bottom:24px;}
+.card-hd{padding:18px 24px;border-bottom:1px solid var(--border);font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:space-between;}
+.card-bd{padding:24px;}
+
+/* form */
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+.fg label{font-size:12px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:.05em;}
+.fg input,.fg select,.fg textarea{padding:10px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px;font-family:inherit;color:var(--text);outline:none;transition:border-color .15s;background:var(--card);}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--blue);}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+
+/* medicine rows */
+.item-row{background:#fafafa;border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:12px;align-items:end;}
+.item-row .fg{margin-bottom:0;}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 20px;border-radius:9px;border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none;transition:opacity .15s;}
+.btn-blue{background:var(--blue);color:#fff;}.btn-blue:hover{opacity:.88;}
+.btn-green{background:var(--green);color:#fff;}.btn-green:hover{opacity:.88;}
+.btn-red{background:var(--red);color:#fff;}.btn-red:hover{opacity:.88;}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--mid);}.btn-outline:hover{border-color:var(--blue);color:var(--blue);}
+.btn-sm{padding:5px 12px;font-size:12.5px;}
+
+/* table */
+.tbl{width:100%;border-collapse:collapse;}
+.tbl th{text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--light);padding:11px 20px;background:#fafafa;border-bottom:1px solid var(--border);}
+.tbl td{padding:13px 20px;font-size:14px;border-bottom:1px solid #f3f4f6;color:var(--mid);}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:#f9fafb;}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11.5px;font-weight:600;}
+.b-paid{background:var(--green-l);color:var(--green);}
+.b-unpaid{background:var(--red-l);color:var(--red);}
+.b-partial{background:var(--amber-l);color:var(--amber);}
+.empty{text-align:center;color:var(--light);padding:40px;font-size:14px;}
+.mono{font-family:'DM Mono',monospace;font-size:13px;}
+.alert{padding:12px 16px;border-radius:9px;font-size:13.5px;margin-bottom:18px;}
+.alert-success{background:var(--green-l);color:#065f46;border:1px solid #6ee7b7;}
+.alert-error{background:var(--red-l);color:#991b1b;border:1px solid #fca5a5;}
+
+/* payment modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:500;align-items:center;justify-content:center;}
+.modal-overlay.show{display:flex;}
+.modal-box{background:var(--card);border-radius:16px;padding:28px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.modal-box h3{font-size:18px;font-weight:700;margin:0 0 20px;}
+.modal-close{float:right;background:none;border:none;font-size:20px;cursor:pointer;color:var(--light);margin-top:-4px;}
+
+@media(max-width:768px){.sw-side{display:none;}.sw-main{margin-left:0;padding:20px 14px 40px;}.grid2{grid-template-columns:1fr;}.stats{grid-template-columns:1fr;}.item-row{grid-template-columns:1fr;}}
+</style>
+
+<div class="sw">
+<!-- SIDEBAR -->
+<aside class="sw-side">
+    <a class="sw-brand" href="{% url 'staff_dashboard' %}">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        Staff Portal
+    </a>
+    <a href="{% url 'staff_dashboard' %}" class="sw-nav">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+    </a>
+    <a href="{% url 'view_appointment' %}" class="sw-nav">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Appointments
+    </a>
+    <a href="{% url 'view_patient' %}" class="sw-nav">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Patients
+    </a>
+    <a href="{% url 'add_bill' %}" class="sw-nav active">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        Billing
+    </a>
+    <div class="sw-spacer"></div>
+    <a href="{% url 'logout_admin' %}" class="sw-out">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign Out
+    </a>
+</aside>
+
+<!-- MAIN -->
+<main class="sw-main">
+    <div class="sw-hd">
+        <h1>Billing</h1>
+        <p>Create bills and manage patient payments.</p>
+    </div>
+
+    {% if messages %}
+        {% for msg in messages %}
+        <div class="alert {% if 'success' in msg.tags %}alert-success{% else %}alert-error{% endif %}">{{ msg }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Stats -->
+    <div class="stats">
+        <div class="sc">
+            <div class="ic ig"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <span class="lbl">Total Bills</span>
+            <span class="val vb">{{ all_bills|length }}</span>
+            <span class="sub">All time</span>
+        </div>
+        <div class="sc">
+            <div class="ic ia"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+            <span class="lbl">Pending Bills</span>
+            <span class="val va">{{ pending_count }}</span>
+            <span class="sub">Awaiting payment</span>
+        </div>
+        <div class="sc">
+            <div class="ic ig"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+            <span class="lbl">Total Outstanding</span>
+            <span class="val vg">NPR {{ total_outstanding|floatformat:2 }}</span>
+            <span class="sub">Balance due</span>
+        </div>
+    </div>
+
+    <!-- Create Bill -->
+    <div class="card">
+        <div class="card-hd">💳 Create New Bill</div>
+        <div class="card-bd">
+            <form method="POST" action="{% url 'add_bill' %}" id="billForm">
+                {% csrf_token %}
+                <div class="grid2">
+                    <div class="fg">
+                        <label>Patient *</label>
+                        <select name="patient" required id="patientSelect">
+                            <option value="">— Select Patient —</option>
+                            {% for p in patients %}
+                            <option value="{{ p.id }}" {% if selected_patient == p.id|stringformat:"s" %}selected{% endif %}>
+                                {{ p.Name }} ({{ p.Mobile }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="fg">
+                        <label>Notes (optional)</label>
+                        <input type="text" name="notes" placeholder="Any notes for this bill">
+                    </div>
+                </div>
+
+                <!-- Billing Items -->
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:12px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:10px;">Charge Items</label>
+                    <div id="itemRows">
+                        <div class="item-row">
+                            <div class="fg">
+                                <label>Service / Item</label>
+                                <select name="billing_item[]">
+                                    <option value="">— Select service —</option>
+                                    {% for item in billing_items %}
+                                    <option value="{{ item.id }}">{{ item.name }} — NPR {{ item.price }} ({{ item.get_category_display }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="fg">
+                                <label>Qty</label>
+                                <input type="number" name="quantity[]" value="1" min="1">
+                            </div>
+                            <div class="fg">
+                                <label>&nbsp;</label>
+                                <span style="font-size:12px;color:var(--light);padding:10px 0;display:block;">Row 1</span>
+                            </div>
+                            <div class="fg" style="justify-content:flex-end;">
+                                <label>&nbsp;</label>
+                                <button type="button" class="btn btn-outline btn-sm remove-row" style="height:42px;">✕</button>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" id="addRow" class="btn btn-outline btn-sm" style="margin-top:4px;">
+                        + Add Item
+                    </button>
+                </div>
+
+                {% if not billing_items %}
+                <div style="background:var(--amber-l);border:1px solid #fde68a;border-radius:9px;padding:12px 16px;font-size:13.5px;color:#92400e;margin-bottom:16px;">
+                    ⚠️ No billing items configured yet. Go to Django Admin → Billing Items and add services first.
+                </div>
+                {% endif %}
+
+                <button type="submit" class="btn btn-blue">Create Bill</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- All Bills -->
+    <div class="card">
+        <div class="card-hd">
+            All Bills
+            <span style="font-size:13px;font-weight:400;color:var(--light);">{{ all_bills|length }} records</span>
+        </div>
+        {% if all_bills %}
+        <table class="tbl">
+            <thead>
+                <tr>
+                    <th>Bill #</th>
+                    <th>Patient</th>
+                    <th>Date</th>
+                    <th>Total</th>
+                    <th>Paid</th>
+                    <th>Balance</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for bill in all_bills %}
+                <tr>
+                    <td class="mono">#{{ bill.bill_number }}</td>
+                    <td style="font-weight:600;color:var(--text);">{{ bill.patient.Name }}</td>
+                    <td>{{ bill.issue_date|date:"M d, Y" }}</td>
+                    <td class="mono">NPR {{ bill.total_amount|floatformat:2 }}</td>
+                    <td class="mono" style="color:var(--green);">NPR {{ bill.paid_amount|floatformat:2 }}</td>
+                    <td class="mono" style="color:var(--red);font-weight:600;">NPR {{ bill.balance_due|floatformat:2 }}</td>
+                    <td>
+                        {% if bill.status == 'paid' %}<span class="badge b-paid">Paid</span>
+                        {% elif bill.status == 'partial' %}<span class="badge b-partial">Partial</span>
+                        {% else %}<span class="badge b-unpaid">Unpaid</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if bill.status != 'paid' %}
+                        <button class="btn btn-green btn-sm"
+                                onclick="openPayment('{{ bill.id }}','{{ bill.bill_number }}','{{ bill.patient.Name }}','{{ bill.balance_due }}')">
+                            Pay
+                        </button>
+                        {% else %}
+                        <span style="color:var(--light);font-size:13px;">Settled</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty">No bills created yet.</div>
+        {% endif %}
+    </div>
+</main>
+</div>
+
+<!-- Payment Modal -->
+<div class="modal-overlay" id="payModal">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closePayment()">×</button>
+        <h3>Record Payment</h3>
+        <p id="payInfo" style="font-size:13.5px;color:var(--mid);margin-bottom:20px;"></p>
+        <form method="POST" action="{% url 'record_payment' %}">
+            {% csrf_token %}
+            <input type="hidden" name="bill_id" id="payBillId">
+            <div class="fg">
+                <label>Amount (NPR) *</label>
+                <input type="number" name="amount" id="payAmount" step="0.01" min="0.01" required>
+            </div>
+            <div class="fg">
+                <label>Payment Method</label>
+                <select name="method">
+                    <option value="cash">Cash</option>
+                    <option value="card">Card</option>
+                    <option value="esewa">eSewa</option>
+                    <option value="khalti">Khalti</option>
+                    <option value="bank">Bank Transfer</option>
+                </select>
+            </div>
+            <div class="fg">
+                <label>Reference No. (optional)</label>
+                <input type="text" name="reference" placeholder="Transaction ID / Receipt No.">
+            </div>
+            <div style="display:flex;gap:10px;margin-top:4px;">
+                <button type="submit" class="btn btn-green" style="flex:1;justify-content:center;">Confirm Payment</button>
+                <button type="button" class="btn btn-outline" onclick="closePayment()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Add item row
+let rowCount = 1;
+document.getElementById('addRow').addEventListener('click', function() {
+    rowCount++;
+    const container = document.getElementById('itemRows');
+    const div = document.createElement('div');
+    div.className = 'item-row';
+    div.innerHTML = `
+        <div class="fg">
+            <label>Service / Item</label>
+            <select name="billing_item[]">
+                <option value="">— Select service —</option>
+                {% for item in billing_items %}
+                <option value="{{ item.id }}">{{ item.name }} — NPR {{ item.price }} ({{ item.get_category_display }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="fg">
+            <label>Qty</label>
+            <input type="number" name="quantity[]" value="1" min="1">
+        </div>
+        <div class="fg">
+            <label>&nbsp;</label>
+            <span style="font-size:12px;color:var(--light);padding:10px 0;display:block;">Row ${rowCount}</span>
+        </div>
+        <div class="fg" style="justify-content:flex-end;">
+            <label>&nbsp;</label>
+            <button type="button" class="btn btn-outline btn-sm remove-row" style="height:42px;" onclick="this.closest('.item-row').remove()">✕</button>
+        </div>
+    `;
+    container.appendChild(div);
+});
+
+// Remove first row protection
+document.querySelector('.remove-row').addEventListener('click', function() {
+    if (document.querySelectorAll('.item-row').length > 1) {
+        this.closest('.item-row').remove();
+    }
+});
+
+// Payment modal
+function openPayment(billId, billNum, patientName, balance) {
+    document.getElementById('payBillId').value = billId;
+    document.getElementById('payAmount').value = parseFloat(balance).toFixed(2);
+    document.getElementById('payAmount').max = parseFloat(balance).toFixed(2);
+    document.getElementById('payInfo').textContent = `Bill #${billNum} — ${patientName} | Balance: NPR ${parseFloat(balance).toFixed(2)}`;
+    document.getElementById('payModal').classList.add('show');
+}
+function closePayment() {
+    document.getElementById('payModal').classList.remove('show');
+}
+// Close on overlay click
+document.getElementById('payModal').addEventListener('click', function(e) {
+    if (e.target === this) closePayment();
+});
+
+// Pre-select patient from URL param
+const urlParams = new URLSearchParams(window.location.search);
+const pid = urlParams.get('patient');
+if (pid) {
+    const sel = document.getElementById('patientSelect');
+    if (sel) sel.value = pid;
+}
+</script>
+{% endblock %}

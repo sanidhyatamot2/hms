@@ -1,36 +1,233 @@
-{%  include 'base.html' %}
-{% include 'navigation.html' %}
-{% block content %}
-<div>
-    <h2>
-        View Patient</h2>
+{% extends "base.html" %}
+{% block title %}Patients – Staff Portal{% endblock %}
 
-         <table id="example" class="table table-striped">
+{% block content %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@500&display=swap');
+:root{--blue:#1a6ef5;--blue-l:#e8f0fe;--green:#0fa66a;--green-l:#e6f7f1;--amber:#d97706;--amber-l:#fff8e1;--red:#e53935;--red-l:#fdecea;--sidebar-bg:#f4f6fb;--sidebar-w:255px;--text:#111827;--mid:#4b5563;--light:#9ca3af;--border:#e5e7eb;--card:#fff;--page:#f9fafb;--r:14px;--sh:0 2px 12px rgba(0,0,0,.07);}
+.sw*{box-sizing:border-box;}
+.sw{font-family:'DM Sans',sans-serif;display:flex;min-height:100vh;background:var(--page);margin:0;padding:0!important;}
+.sw-side{width:var(--sidebar-w);background:var(--sidebar-bg);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:28px 14px;position:fixed;top:0;left:0;bottom:0;z-index:200;}
+.sw-brand{display:flex;align-items:center;gap:10px;padding:0 8px 24px;border-bottom:1px solid var(--border);margin-bottom:18px;color:var(--blue);font-weight:700;font-size:17px;text-decoration:none;}
+.sw-nav{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:10px;text-decoration:none;color:var(--mid);font-size:14px;font-weight:500;margin-bottom:3px;transition:background .17s,color .17s;}
+.sw-nav:hover{background:#e8edf8;color:var(--blue);text-decoration:none;}
+.sw-nav.active{background:var(--blue);color:#fff;}
+.sw-nav.active svg{stroke:#fff!important;}
+.sw-nav svg{stroke:currentColor;flex-shrink:0;}
+.sw-spacer{flex:1;}
+.sw-out{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:10px;border:1.5px solid var(--red);background:transparent;color:var(--red);font-size:14px;font-weight:600;cursor:pointer;width:100%;text-decoration:none;transition:background .17s;}
+.sw-out:hover{background:var(--red-l);text-decoration:none;color:var(--red);}
+.sw-main{margin-left:var(--sidebar-w);flex:1;padding:40px 36px 60px;}
+.sw-hd{margin-bottom:28px;}
+.sw-hd h1{font-size:24px;font-weight:700;color:var(--text);margin:0 0 4px;}
+.sw-hd p{color:var(--light);font-size:14px;margin:0;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;margin-bottom:24px;}
+.card-hd{padding:18px 24px;border-bottom:1px solid var(--border);font-weight:700;font-size:15px;}
+.card-bd{padding:24px;}
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+.fg label{font-size:12px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:.05em;}
+.fg input,.fg select,.fg textarea{padding:10px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px;font-family:inherit;color:var(--text);outline:none;transition:border-color .15s;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--blue);}
+.fg textarea{resize:vertical;min-height:70px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 20px;border-radius:9px;border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none;transition:opacity .15s;}
+.btn-blue{background:var(--blue);color:#fff;}.btn-blue:hover{opacity:.88;}
+.btn-red{background:var(--red);color:#fff;}.btn-red:hover{opacity:.88;}
+.btn-sm{padding:5px 12px;font-size:12.5px;}
+.tbl{width:100%;border-collapse:collapse;}
+.tbl th{text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--light);padding:11px 20px;background:#fafafa;border-bottom:1px solid var(--border);}
+.tbl td{padding:13px 20px;font-size:14px;border-bottom:1px solid #f3f4f6;color:var(--mid);}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:#f9fafb;}
+.empty{text-align:center;color:var(--light);padding:40px;font-size:14px;}
+.alert{padding:12px 16px;border-radius:9px;font-size:13.5px;margin-bottom:18px;}
+.alert-success{background:var(--green-l);color:#065f46;border:1px solid #6ee7b7;}
+.alert-error{background:var(--red-l);color:#991b1b;border:1px solid #fca5a5;}
+
+/* Credential card */
+.cred-card{background:#f0fdf4;border:2px solid #86efac;border-radius:14px;padding:24px 28px;margin-bottom:24px;}
+.cred-card h3{font-size:16px;font-weight:700;color:#15803d;margin:0 0 4px;display:flex;align-items:center;gap:8px;}
+.cred-card .csub{font-size:13px;color:#16a34a;margin:0 0 18px;}
+.cred-row{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #bbf7d0;border-radius:9px;padding:12px 16px;margin-bottom:8px;}
+.cred-lbl{font-size:11px;color:#16a34a;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;}
+.cred-val{font-size:16px;font-weight:700;color:#111827;font-family:'DM Mono',monospace;}
+.copy-btn{background:none;border:1px solid #86efac;border-radius:6px;padding:5px 14px;font-size:12px;font-weight:600;color:#16a34a;cursor:pointer;white-space:nowrap;transition:background .15s;}
+.copy-btn:hover{background:#dcfce7;}
+.cred-note{font-size:13px;color:#166534;margin-top:12px;padding:10px 14px;background:#dcfce7;border-radius:8px;line-height:1.6;}
+
+@media(max-width:768px){.sw-side{display:none;}.sw-main{margin-left:0;padding:20px 14px 40px;}.grid2,.grid3{grid-template-columns:1fr;}}
+</style>
+
+<div class="sw">
+
+<!-- SIDEBAR -->
+<aside class="sw-side">
+    <a class="sw-brand" href="{% url 'staff_dashboard' %}">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        Staff Portal
+    </a>
+    <a href="{% url 'staff_dashboard' %}" class="sw-nav">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+    </a>
+    <a href="{% url 'view_appointment' %}" class="sw-nav">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Appointments
+    </a>
+    <a href="{% url 'view_patient' %}" class="sw-nav active">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Patients
+    </a>
+    <a href="{% url 'add_bill' %}" class="sw-nav">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        Billing
+    </a>
+    <div class="sw-spacer"></div>
+    <a href="{% url 'logout_admin' %}" class="sw-out">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign Out
+    </a>
+</aside>
+
+<!-- MAIN -->
+<main class="sw-main">
+    <div class="sw-hd">
+        <h1>Patients</h1>
+        <p>Register new patients and manage existing records.</p>
+    </div>
+
+    {% if messages %}
+        {% for msg in messages %}
+        <div class="alert {% if 'success' in msg.tags %}alert-success{% else %}alert-error{% endif %}">{{ msg }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Credential card — shown only after a new registration -->
+    {% if new_patient %}
+    <div class="cred-card">
+        <h3>✅ Patient Registered Successfully</h3>
+        <p class="csub">Hand these login details to the patient.</p>
+        <div class="cred-row">
+            <div>
+                <div class="cred-lbl">Patient Name</div>
+                <div class="cred-val">{{ new_patient.Name }}</div>
+            </div>
+        </div>
+        <div class="cred-row">
+            <div>
+                <div class="cred-lbl">Login ID (Mobile Number)</div>
+                <div class="cred-val" id="credMobile">{{ new_patient.Mobile }}</div>
+            </div>
+            <button class="copy-btn" onclick="copyText('credMobile', this)">Copy</button>
+        </div>
+        <div class="cred-row">
+            <div>
+                <div class="cred-lbl">Default Password</div>
+                <div class="cred-val" id="credPass">{{ new_patient.Mobile }}</div>
+            </div>
+            <button class="copy-btn" onclick="copyText('credPass', this)">Copy</button>
+        </div>
+        <div class="cred-note">
+            📋 <strong>Tell the patient:</strong> Go to the login page → Patient tab → enter your mobile number as both the username and the password. You can change your password after logging in.
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Register New Patient form -->
+    <div class="card">
+        <div class="card-hd">👤 Register New Patient</div>
+        <div class="card-bd">
+            <!-- Info hint -->
+            <div style="background:var(--blue-l);border-radius:9px;padding:10px 14px;font-size:13px;color:#1e40af;margin-bottom:18px;">
+                ℹ️ The patient's <strong>mobile number</strong> will be set as both their login ID and default password.
+            </div>
+            <form method="POST" action="{% url 'staff_register_patient' %}">
+                {% csrf_token %}
+                <div class="grid3">
+                    <div class="fg">
+                        <label>Full Name *</label>
+                        <input type="text" name="Name" placeholder="Patient full name" required>
+                    </div>
+                    <div class="fg">
+                        <label>Mobile * (login ID + default password)</label>
+                        <input type="text" name="Mobile" placeholder="98XXXXXXXX" required>
+                    </div>
+                    <div class="fg">
+                        <label>Gender *</label>
+                        <select name="Gender" required style="padding:10px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px;font-family:inherit;color:var(--text);outline:none;">
+                            <option value="">— Select —</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid2">
+                    <div class="fg">
+                        <label>Address *</label>
+                        <input type="text" name="Address" placeholder="Patient address" required>
+                    </div>
+                    <div class="fg">
+                        <label>Email (optional)</label>
+                        <input type="email" name="email" placeholder="patient@email.com">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-blue">Register Patient</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- All Patients table -->
+    <div class="card">
+        <div class="card-hd" style="display:flex;align-items:center;justify-content:space-between;">
+            All Patients
+            <span style="font-size:13px;font-weight:400;color:var(--light);">{{ patients|length }} registered</span>
+        </div>
+        {% if patients %}
+        <table class="tbl">
             <thead>
                 <tr>
-                    <th>PatientID</th>
+                    <th>ID</th>
                     <th>Name</th>
                     <th>Gender</th>
-                    <th>Mobile</th>
+                    <th>Mobile / Login</th>
                     <th>Address</th>
-                    <th>Delete</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                {% for i in doc %}
+                {% for p in patients %}
                 <tr>
-                    <td>{{ i.id }}</td>
-                    <td>{{ i.Name }}</td>
-                    <td>{{ i.Gender }}</td>
-                    <td>{{ i.Mobile }}</td>
-                    <td>{{ i.Address}}</td>
-                    <td><a href="{% url 'delete_patient' i.id %}"
-                           onclick="return confirm('Are you sure you want to delete?')" class="btn btn-danger"> Delete</a></td>
+                    <td style="font-family:'DM Mono',monospace;font-size:13px;">{{ p.id }}</td>
+                    <td style="font-weight:600;color:var(--text);">{{ p.Name }}</td>
+                    <td>{{ p.Gender }}</td>
+                    <td style="font-family:'DM Mono',monospace;">{{ p.Mobile }}</td>
+                    <td>{{ p.Address|truncatechars:30 }}</td>
+                    <td style="display:flex;gap:8px;">
+                        <a href="{% url 'add_bill' %}?patient={{ p.id }}" class="btn btn-blue btn-sm">Bill</a>
+                        <a href="{% url 'delete_patient' p.id %}"
+                           onclick="return confirm('Delete {{ p.Name }}? This cannot be undone.')"
+                           class="btn btn-red btn-sm">Delete</a>
+                    </td>
                 </tr>
-                {%  endfor %}
+                {% endfor %}
             </tbody>
         </table>
-
+        {% else %}
+        <div class="empty">No patients registered yet.</div>
+        {% endif %}
+    </div>
+</main>
 </div>
+
+<script>
+function copyText(id, btn) {
+    const text = document.getElementById(id).textContent.trim();
+    navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+}
+</script>
 {% endblock %}
-{% include 'footer.html' %}

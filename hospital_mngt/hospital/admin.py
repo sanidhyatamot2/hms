@@ -24,17 +24,14 @@ class BillAdmin(admin.ModelAdmin):
     list_display = ('bill_number', 'patient', 'issue_date', 'status', 'total_amount', 'balance_due')
     list_filter = ('status', 'issue_date')
     search_fields = ('bill_number', 'patient__Name')
-    inlines = [BillItemInline]  # ← THIS ENABLES ADDING ITEMS DIRECTLY!
-    readonly_fields = ('bill_number', 'subtotal', 'total_amount', 'balance_due')
+    inlines = [BillItemInline]
+    readonly_fields = ('bill_number', 'total_amount', 'balance_due')  # ← removed 'subtotal'
     fieldsets = (
         ('Basic Info', {
-            'fields': ('bill_number', 'patient', 'appointment', 'issue_date', 'due_date', 'status')
+            'fields': ('bill_number', 'patient', 'issue_date', 'status')
         }),
         ('Financials', {
-            'fields': ('subtotal', 'discount', 'tax', 'total_amount', 'paid_amount', 'balance_due')
-        }),
-        ('Notes', {
-            'fields': ('notes',)
+            'fields': ('total_amount', 'paid_amount', 'balance_due', 'notes')
         }),
     )
 

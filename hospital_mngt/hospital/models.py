@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User
 
 # Create your models here.
 class Doctor(models.Model):
@@ -61,7 +62,7 @@ class PrescriptionItem(models.Model):
         return f"{self.medicine_name} - {self.dosage}"
 
 class BillingItem(models.Model):
-    name = models.CharField(max_length=200)  # e.g., "General Consultation", "X-Ray"
+    name = models.CharField(max_length=200)
     category = models.CharField(max_length=50, choices=[
         ('consultation', 'Consultation'),
         ('lab_test', 'Lab Test'),
@@ -72,27 +73,20 @@ class BillingItem(models.Model):
     ])
     price = models.DecimalField(max_digits=10, decimal_places=2)
     is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.name} - NPR {self.price}"
 
+
 class Bill(models.Model):
-    patient = models.ForeignKey('Patient', on_delete=models.CASCADE, related_name='bills')
-    appointment = models.ForeignKey('Appointment', on_delete=models.SET_NULL, null=True, blank=True)
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='bills')
     bill_number = models.CharField(max_length=20, unique=True, editable=False)
     issue_date = models.DateField(auto_now_add=True)
-    due_date = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=[
-        ('draft', 'Draft'),
         ('unpaid', 'Unpaid'),
         ('partial', 'Partially Paid'),
         ('paid', 'Paid'),
-        ('cancelled', 'Cancelled'),
-    ], default='draft')
-    subtotal = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    discount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    tax = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    ], default='unpaid')
     total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     paid_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     notes = models.TextField(blank=True)
@@ -107,17 +101,28 @@ class Bill(models.Model):
     def balance_due(self):
         return self.total_amount - self.paid_amount
 
+
 class BillItem(models.Model):
     bill = models.ForeignKey(Bill, on_delete=models.CASCADE, related_name='items')
     billing_item = models.ForeignKey(BillingItem, on_delete=models.PROTECT)
     quantity = models.PositiveIntegerField(default=1)
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
-    discount = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
 
     def save(self, *args, **kwargs):
-        if not self.unit_price and self.billing_item:
-            self.unit_price = self.billing_item.price
-        self.amount = (self.quantity * self.unit_price) - self.discount
+        self.unit_price = self.billing_item.price
+        self.amount = self.quantity * self.unit_price
         super().save(*args, **kwargs)
-        self.bill.save()  # Recalculate total in parent bill
+        # Update parent bill total
+        self.bill.total_amount = sum(item.amount for item in self.bill.items.all())
+        self.bill.save()
+
+class Staff(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    role = models.CharField(max_length=50, default="Receptionist")
+    phone = models.CharField(max_length=15, blank=True)
+    joined_date = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.role})"
